@@ -1,3 +1,6 @@
+/* Simple sort program */
+/* R.Jha, Aug 2015 */ 
+
 #include <iostream>
 using namespace std;
 
@@ -6,8 +9,8 @@ void swap(int &m, int &n);
 
 int main()
 {
-    int N = 10;
-    int a[10] = {52, 1, 12, 16, 99, 1002,
+    int N = 6;
+    int a[6] = {52, 1002,
         2001, 0, 79, 99};
     
     // Selection Sort
