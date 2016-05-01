@@ -1,6 +1,6 @@
 '''This code calculates the jackknife error
    First check/edit : September 12, 2015
-   Implemented blocking on October 27, 2015 '''
+   Implemented blocking fully on October 27, 2015 '''
 
 import sys
 from math import *
