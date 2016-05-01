@@ -29,17 +29,25 @@ for k in range(n_b):
     Data.insert(k,B)
     B = 0
 
+<<<<<<< HEAD
 # Forgive me, Father, for I have sinned.
 
 '''
 print "Data[0] is" , Data[0]
+=======
+'''print "Data[0] is" , Data[0]
+>>>>>>> 7ab4cc92e1b989319155aad556ed9ccdeb6fe885
 print "Data[1] is" , Data[1]
 print "Data[2] is" , Data[2]
 print "Data[3] is" , Data[3]
 print "Data[4] is" , Data[4]
+<<<<<<< HEAD
 print "Data TOT", data_tot
     
 '''
+=======
+print "Data TOT", data_tot'''
+>>>>>>> 7ab4cc92e1b989319155aad556ed9ccdeb6fe885
 
 ''' Do the jackknife estimates '''
 
@@ -58,7 +66,11 @@ data_jack_av /= n_b-1
 data_jack_err /= n_b-1
 
 data_jack_err = sqrt((n_b - 2) * abs(data_jack_err - data_jack_av**2))
+<<<<<<< HEAD
 print " JK Average : %8.10f "  " JK Error : %6.10f" % (data_jack_av, data_jack_err)
+=======
+print " JK Average : %.2E "  " JK Error : %.2E" % (data_jack_av, data_jack_err)
+>>>>>>> 7ab4cc92e1b989319155aad556ed9ccdeb6fe885
 
 
 
