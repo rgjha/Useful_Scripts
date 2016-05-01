@@ -14,7 +14,7 @@ public:
 void Matrix::InputMatrix()
 {
     cout << "Enter the values for the first matrix";
-    cout << "\n Matrix 1, Row 1:";
+    //cout << "\n Matrix 1, Row 1:";
     for (i=0; i<3; i++)
     {
         for (j=0; j<3; j++)
@@ -52,7 +52,7 @@ void Matrix::OutputMatrix()
     {
         for (j=0; j<3; j++)
         {
-            cout << c[i][j];
+            cout << c[i][j] << " " ;
         }
         cout << endl;
     }
@@ -63,6 +63,6 @@ int main()
     y.InputMatrix();
     y.Mult();
     y.OutputMatrix();
-    system ("pause");
+    //system ("pause");
     return 0;
 }

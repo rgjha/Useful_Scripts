@@ -2,7 +2,7 @@ import fileinput
 from math import *
 N2 = []; N2_tot = 0.
 N4 = []; N4_tot = 0.
-filename = 'TOT.dat'
+filename = 'B.dat'
 file = open(filename, "r")
 for line in file:
     line = line.split()
