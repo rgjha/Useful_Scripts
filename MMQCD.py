@@ -12,6 +12,8 @@ Nc = 3     # Color group
 size_col = ((Nc**2)-1)*3 
 O1state = np.zeros((3,(Nc**2)-1,3,(Nc**2)-1))
 O1norm = np.zeros((3,(Nc**2)-1))
+O2state = np.zeros((252, 3,(Nc**2)-1))
+O2norm = np.zeros(252) 
 matrix_bos = np.zeros((3,(Nc**2)-1)) 
 
 
@@ -39,6 +41,28 @@ def OP1():  # Operator 1 as per Aug 17 notes
       O1state[i][a], O1norm[i][a] = action_A_or_Adag((i,a),O1state[i][a], O1norm[i][a], 1) 
 
   return O1state, O1norm
+
+def OP2():  # Operator 2 
+# f_abc epsilon_ijk * A†_ia * A†_jb * A†_kc
+  
+  st_num = 0 
+  for i, a in itertools.product(range(3), range((Nc**2)-1)): 
+    for j, b in itertools.product(range(3), range((Nc**2)-1)):
+      for k, c in itertools.product(range(3), range((Nc**2)-1)):
+
+        if fabc((a,b,c)) != 0 and LeviCivita(i, j, k) != 0:
+          # This happens for only 252 combination of a,b,c,i,j,k
+          # Out of possible 8^3 x 27 = 512 x 27 = 13824  combinations 
+
+          tmp = fabc((a,b,c)) * LeviCivita(i, j, k) 
+          vac = np.zeros((3,(Nc**2)-1)) # Vacuum state
+          O2state[st_num], O2norm[st_num] = action_A_or_Adag((k,c), vac, 1.0, 1)
+          O2state[st_num], O2norm[st_num] = action_A_or_Adag((j,b),O2state[st_num], O2norm[st_num], 1)
+          O2state[st_num], O2norm[st_num] = action_A_or_Adag((i,a),O2state[st_num], O2norm[st_num], 1) 
+          O2norm[st_num] *= tmp 
+          st_num += 1
+
+  return  O2state, O2norm
 
 # Setting up SU(3) structure constants 
 def fabc(w):
