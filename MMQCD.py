@@ -46,13 +46,13 @@ def fabc(w):
   out = 0.0
   if w in list(itertools.permutations((1,2,3))): 
     out = 1.0
-  if w in list(itertools.permutations((1,4,7))) or list(itertools.permutations((2,4,6))): 
+  if w in list(itertools.permutations((1,4,7))) or w in list(itertools.permutations((2,4,6))): 
     return 0.5 
   if w in list(itertools.permutations((2,5,7))) or w in list(itertools.permutations((3,4,5))): 
     return 0.5 
-  if w in list(itertools.permutations((1,5,6))) or list(itertools.permutations((3,6,7))): 
-    return -0.50
-  if w in list(itertools.permutations((4,5,8))) or list(itertools.permutations((6,7,8))): 
+  if w in list(itertools.permutations((1,5,6))) or w in list(itertools.permutations((3,6,7))): 
+    return -0.5
+  if w in list(itertools.permutations((4,5,8))) or w in list(itertools.permutations((6,7,8))): 
     return np.sqrt(3)/2.0
 
   return out 
