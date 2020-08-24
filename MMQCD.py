@@ -13,13 +13,41 @@ dimG = (Nc**2) - 1
 size_col = dimG * 3 
 n_O1_2boson = 24
 n_O2_3boson = 324
+n_04 = 3420
 O1state = np.zeros((n_O1_2boson,3, dimG))
 O1norm = np.zeros((n_O1_2boson))
 O2state = np.zeros((n_O2_3boson, 3, dimG))
 O2norm = np.zeros((n_O2_3boson))
 O32state = np.zeros((n_O2_3boson, 3, dimG))
 O32norm = np.zeros(n_O2_3boson)
+O4state = np.zeros((n_04, 3, dimG))
+O4norm = np.zeros((n_04))
+O5state = np.zeros((n_04, 3, dimG))
+O5norm = np.zeros((n_04))
 matrix_bos = np.zeros((3, dimG))
+
+
+# Setting up SU(3) structure constants 
+# Note that standard f_123 is denoted as f_012 here.
+def fabc(w):
+
+  if len(w) != 3:
+    print ("Needs three indices for computing f_abc, exiting!")
+    sys.exit(1)
+
+  out = 0.0
+  if w in list(itertools.permutations((0,1,2))): 
+    out = 1.0
+  if w in list(itertools.permutations((0,3,6))) or w in list(itertools.permutations((1,3,5))): 
+    out = 0.5
+  if w in list(itertools.permutations((1,4,6))) or w in list(itertools.permutations((2,3,4))): 
+    out = 0.5 
+  if w in list(itertools.permutations((0,4,5))) or w in list(itertools.permutations((2,5,6))): 
+    out = -0.5
+  if w in list(itertools.permutations((3,4,7))) or w in list(itertools.permutations((5,6,7))): 
+    out = np.sqrt(3)/2.0
+
+  return out 
 
 
 def action_A_or_Adag(v, in_vec, in_coeff, choice):
@@ -113,27 +141,64 @@ def OP32():  # Operator 3 on 2 on vac
   return  O32state, O32norm
 
 
-# Setting up SU(3) structure constants 
-# Note that standard f_123 is denoted as f_012 here.
-def fabc(w):
+def OP4():  # Operator 4 on vac
+# f_abc f_ade (A†_ib * A†_jc * A†_id * A†_je) | vac. >
 
-  if len(w) != 3:
-    print ("Needs three indices for computing f_abc, exiting!")
-    sys.exit(1)
+  st_num = 0
 
-  out = 0.0
-  if w in list(itertools.permutations((0,1,2))): 
-    out = 1.0
-  if w in list(itertools.permutations((0,3,6))) or w in list(itertools.permutations((1,3,5))): 
-    out = 0.5
-  if w in list(itertools.permutations((1,4,6))) or w in list(itertools.permutations((2,3,4))): 
-    out = 0.5 
-  if w in list(itertools.permutations((0,4,5))) or w in list(itertools.permutations((2,5,6))): 
-    out = -0.5
-  if w in list(itertools.permutations((3,4,7))) or w in list(itertools.permutations((5,6,7))): 
-    out = np.sqrt(3)/2.0
+  for a in range(dimG):
+    for b in range(dimG):
+      for c in range(dimG):
+        for d in range(dimG):
+          for e in range(dimG):
 
-  return out 
+            tmp = fabc((a,b,c)) * fabc((a,d,e))
+            if tmp != 0:
+
+
+              for i in range(3):
+                for j in range(3):
+
+                  vac = np.zeros((3, dimG)) # Vacuum state
+                  O4state[st_num], O4norm[st_num] = action_A_or_Adag((j,e), vac, 1.0, 1)
+                  O4state[st_num], O4norm[st_num] = action_A_or_Adag((i,d),O4state[st_num], O4norm[st_num], 1)
+                  O4state[st_num], O4norm[st_num] = action_A_or_Adag((j,c),O4state[st_num], O4norm[st_num], 1)
+                  O4state[st_num], O4norm[st_num] = action_A_or_Adag((i,b),O4state[st_num], O4norm[st_num], 1)
+                  O4norm[st_num] *= tmp
+                  st_num += 1
+
+
+  return  O4state, O4norm
+
+
+def OP5():  # Operator 4 on vac
+# f_abc f_ade (A†_ib * A†_jc * A†_id * A†_je) | vac. >
+
+  st_num = 0
+
+  for a in range(dimG):
+    for b in range(dimG):
+      for c in range(dimG):
+        for d in range(dimG):
+          for e in range(dimG):
+
+            tmp = fabc((a,b,c)) * fabc((a,d,e))
+            if tmp != 0:
+
+
+              for i in range(3):
+                for j in range(3):
+
+                  vac = np.zeros((3, dimG)) # Vacuum state
+                  O5state[st_num], O5norm[st_num] = action_A_or_Adag((j,e), vac, 1.0, 1)
+                  O5state[st_num], O5norm[st_num] = action_A_or_Adag((i,d),O5state[st_num], O5norm[st_num], 1)
+                  O5state[st_num], O5norm[st_num] = action_A_or_Adag((j,c),O5state[st_num], O5norm[st_num], 1)
+                  O5state[st_num], O5norm[st_num] = action_A_or_Adag((i,b),O5state[st_num], O5norm[st_num], 0)
+                  O5norm[st_num] *= tmp
+                  st_num += 1
+
+
+  return  O5state, O5norm
 
 
 if __name__ == "__main__":
@@ -141,8 +206,15 @@ if __name__ == "__main__":
   OP1()
   OP2()
   OP32()
+  OP4() 
+  OP5() 
 
   for i in range (10): # Print first 10 states of each type for now. 
-    print ("O1:", O1state[i].reshape(size_col), "with coefficient", O1norm[i]) # 24 states
-    print ("O2:", O2state[i].reshape(size_col), "with coefficient", O2norm[i]) # 324 states 
-    print ("O32:",O32state[i].reshape(size_col), "with coefficient", O32norm[i]) # 324 states 
+    print ("O1:", O1state[i].reshape(size_col), "with coefficient", O1norm[i]) # 24 states #2-boson state 
+    print ("O2:", O2state[i].reshape(size_col), "with coefficient", O2norm[i]) # 324 states  #3-boson state 
+    print ("O32:",O32state[i].reshape(size_col), "with coefficient", O32norm[i]) # 324 states  #5-boson state 
+    print ("O4:",O4state[i].reshape(size_col), "with coefficient", O4norm[i]) # 3420 states # 4-boson state 
+    print ("O5:",O5state[i].reshape(size_col), "with coefficient", O5norm[i]) # 3420 states # 2-boson state 
+
+
+
