@@ -81,8 +81,9 @@ def action_A_or_Adag(v, in_vec, in_coeff, choice):
   return out_vec, out_coeff
 
 
-def OP1(in_state, in_state_norm):  # Operator 1 as per Aug 17 notes
-# O1 = A_ij^dagger.A_ij^dagger 
+def OP1(in_state, in_state_norm):  
+# Operator 1 as per Aug 17 notes
+# O1 = A_ij^dagger.A_ij^dagger | in state, in_state_norm >
    
   st_num = 0 
 
@@ -99,8 +100,10 @@ def OP1(in_state, in_state_norm):  # Operator 1 as per Aug 17 notes
   return O1state, O1norm
 
 
-def OP2(in_state, in_state_norm):  # Operator 2 
-# f_abc ε_ijk (A†_ia * A†_jb * A†_kc) 
+def OP2(in_state, in_state_norm): 
+# O2 | . > = f_abc ε_ijk (A†_ia * A†_jb * A†_kc) | in state, in_state_norm >
+# Note that out of possible 8^3 x 27 = 512 x 27 = 13824  combinations
+# of a,b,c,i,j,k -- only 324 (=6 x 54) are non-zero!
   
   st_num = 0 
   for i, a in itertools.product(range(3), range(dimG)): 
@@ -109,9 +112,6 @@ def OP2(in_state, in_state_norm):  # Operator 2
 
         tmp = fabc((a,b,c)) * LeviCivita(i, j, k)
         if tmp != 0:
-
-            # This happens for only 324 (=6 x 54) combinations of a,b,c,i,j,k
-            # Out of possible 8^3 x 27 = 512 x 27 = 13824  combinations
           
           O2state[st_num] = in_state
           O2norm[st_num] = in_state_norm
@@ -124,9 +124,11 @@ def OP2(in_state, in_state_norm):  # Operator 2
   return  O2state, O2norm
 
 
-def OP3(in_state, in_state_norm):  # Operator 3 on 2 on vac
+def OP3(in_state, in_state_norm):  
+# f_abc ε_ijk (A_ia * A†_jb * A†_kc) | in state, in_state_norm >
+# For ex: Operator 3 on 2 on vac
 # f_abc ε_ijk (A_ia * A†_jb * A†_kc)
-# For ex: f_584 ε_321 (A_35 * A†_28 * A†_14)
+# f_584 ε_321 (A_35 * A†_28 * A†_14)
 # -sqrt(3)/2 (A_35 * A†_28 * A†_14) | O2state >
   num = 0
 
@@ -149,8 +151,8 @@ def OP3(in_state, in_state_norm):  # Operator 3 on 2 on vac
   return  O3state, O3norm
 
 
-def OP4(in_state, in_state_norm):  # Operator 4 on vac
-# f_abc f_ade (A†_ib * A†_jc * A†_id * A†_je) | vac. >
+def OP4(in_state, in_state_norm): 
+# f_abc f_ade (A†_ib * A†_jc * A†_id * A†_je) | in state, in_state_norm >
 
   st_num = 0
 
@@ -181,8 +183,8 @@ def OP4(in_state, in_state_norm):  # Operator 4 on vac
   return  O4state, O4norm
 
 
-def OP5(in_state, in_state_norm):  # Operator 4 on vac
-# f_abc f_ade (A_ib * A†_jc * A†_id * A†_je) | vac. >
+def OP5(in_state, in_state_norm):
+# f_abc f_ade (A_ib * A†_jc * A†_id * A†_je) | in state, in_state_norm >
 
   st_num = 0
 
@@ -215,7 +217,7 @@ def OP5(in_state, in_state_norm):  # Operator 4 on vac
 
 def OP6(in_state, in_state_norm):  
 # f_abc f_ade [(A_ib * A_jc * A†_id * A†_je) + (A_ib * A_id * A†_jc * A†_je) +  \ 
-# (A_ib * A_je * A†_id * A†_jc)] | vac. >
+# (A_ib * A_je * A†_id * A†_jc)] | in state, in_state_norm >
 
   st_num = 0
 
@@ -289,20 +291,20 @@ def OP6(in_state, in_state_norm):
 if __name__ == "__main__":
 
 
-  OP1(vac, 1.0) 
-  OP2(vac, 1.0)
-  OP3(O2state, O2norm)
-  OP4(vac, 1.0) 
-  OP5(vac, 1.0) 
-  OP6(O4state, O4norm) 
+  out_state1, norm_out_state1 = OP1(vac, 1.0) 
+  out_state2, norm_out_state2 = OP2(vac, 1.0)
+  out_state32, norm_out_state32 = OP3(O2state, O2norm)
+  out_state4, norm_out_state4 = OP4(vac, 1.0) 
+  out_state5, norm_out_state5 = OP5(vac, 1.0) 
+  out_state64, norm_out_state64 = OP6(O4state, O4norm) 
 
   for i in range (10): # Print first 10 states of each type for now. 
-    print ("O1 |vac> :", O1state[i].reshape(size_col), "with coefficient", round(O1norm[i],3)) # 24 states #2-boson state 
-    print ("O2 |vac> :", O2state[i].reshape(size_col), "with coefficient", round(O2norm[i],3)) # 324 states  #3-boson state 
-    print ("O3 O2 |vac> :",O3state[i].reshape(size_col), "with coefficient", round(O3norm[i],3)) # 324 states  #5-boson state 
-    print ("O4 |vac> :",O4state[i].reshape(size_col), "with coefficient", round(O4norm[i],3)) # 3420 states # 4-boson state 
-    print ("O5 |vac> :",O5state[i].reshape(size_col), "with coefficient", round(O5norm[i],3)) # 3420 states # 2-boson state 
-    print ("O6 O4 |vac> :",O6totalstate[i].reshape(size_col), "with coefficient", round(O6totalnorm[i],3)) # 3420 states
+    print ("O1 |vac> :", out_state1[i].reshape(size_col), "with coefficient", round(norm_out_state1[i],3)) # 24 states #2-boson state 
+    print ("O2 |vac> :", out_state2[i].reshape(size_col), "with coefficient", round(norm_out_state2[i],3)) # 324 states  #3-boson state 
+    print ("O3 O2 |vac> :",out_state32[i].reshape(size_col), "with coefficient", round(norm_out_state32[i],3)) # 324 states  #5-boson state 
+    print ("O4 |vac> :",out_state4[i].reshape(size_col), "with coefficient", round(norm_out_state4[i],3)) # 3420 states # 4-boson state 
+    print ("O5 |vac> :",out_state5[i].reshape(size_col), "with coefficient", round(norm_out_state5[i],3)) # 3420 states # 2-boson state 
+    print ("O6 O4 |vac> :",out_state64[i].reshape(size_col), "with coefficient", round(norm_out_state64[i],3)) # 3420 states
 
 
 
