@@ -32,7 +32,7 @@ vac = np.zeros((3, dimG)) # Vacuum state
 
 # Setting up SU(3) structure constants 
 # Note that standard f_123 is denoted as f_012 here.
-def fabc(w):
+def fSU3(w):
 
   if len(w) != 3:
     print ("Needs three indices for computing f_abc, exiting!")
@@ -110,7 +110,7 @@ def OP2(in_state, in_state_norm):
     for j, b in itertools.product(range(3), range(dimG)):
       for k, c in itertools.product(range(3), range(dimG)):
 
-        tmp = fabc((a,b,c)) * LeviCivita(i, j, k)
+        tmp = fSU3((a,b,c)) * LeviCivita(i, j, k)
         if tmp != 0:
           
           O2state[st_num] = in_state
@@ -136,11 +136,12 @@ def OP3(in_state, in_state_norm):
     for j, b in itertools.product(range(3), range(dimG)):
       for k, c in itertools.product(range(3), range(dimG)):
 
-        tmp = fabc((a,b,c)) * LeviCivita(i, j, k)
+        tmp = fSU3((a,b,c)) * LeviCivita(i, j, k)
         if tmp != 0:
 
-          O3state[num] = in_state[num]
+          O3state[num] = in_state[num] 
           O3norm[num] = in_state_norm[num]
+
 
           O3state[num], O3norm[num] = action_A_or_Adag((k,c),O3state[num], O3norm[num], 1)
           O3state[num], O3norm[num] = action_A_or_Adag((j,b),O3state[num], O3norm[num], 1)
@@ -153,8 +154,11 @@ def OP3(in_state, in_state_norm):
 
 def OP4(in_state, in_state_norm): 
 # f_abc f_ade (A†_ib * A†_jc * A†_id * A†_je) | in state, in_state_norm >
+# How many states should be here? 
+# 3420 = 380*3*3 # 380 = fSU3, 3 = i , 3=j 
 
   st_num = 0
+  count = 0 
 
   for a in range(dimG):
     for b in range(dimG):
@@ -162,13 +166,19 @@ def OP4(in_state, in_state_norm):
         for d in range(dimG):
           for e in range(dimG):
 
-            tmp = fabc((a,b,c)) * fabc((a,d,e))
+            tmp = fSU3((a,b,c)) * fSU3((a,d,e)) 
+            # This 'tmp' is non-zero 3420 times..
+
             if tmp != 0:
 
+              if a == 0:  # 36+36+36+64+64+64+64+16= 380
+                count += 1 
 
               for i in range(3):
                 for j in range(3):
 
+                    # TODO! Aug 28 
+                    
                   O4state[st_num] = in_state
                   O4norm[st_num] = in_state_norm
 
@@ -179,7 +189,7 @@ def OP4(in_state, in_state_norm):
                   O4norm[st_num] *= tmp
                   st_num += 1
 
-
+ 
   return  O4state, O4norm
 
 
@@ -194,7 +204,7 @@ def OP5(in_state, in_state_norm):
         for d in range(dimG):
           for e in range(dimG):
 
-            tmp = fabc((a,b,c)) * fabc((a,d,e))
+            tmp = fSU3((a,b,c)) * fSU3((a,d,e))
             if tmp != 0:
 
 
@@ -218,6 +228,8 @@ def OP5(in_state, in_state_norm):
 def OP6(in_state, in_state_norm):  
 # f_abc f_ade [(A_ib * A_jc * A†_id * A†_je) + (A_ib * A_id * A†_jc * A†_je) +  \ 
 # (A_ib * A_je * A†_id * A†_jc)] | in state, in_state_norm >
+# Ex: f_123 f_123 [(A_ib * A_jc * A†_id * A†_je) + (A_ib * A_id * A†_jc * A†_je) +  \ 
+# (A_ib * A_je * A†_id * A†_jc)] | in state, in_state_norm >
 
   st_num = 0
 
@@ -227,31 +239,27 @@ def OP6(in_state, in_state_norm):
         for d in range(dimG):
           for e in range(dimG):
 
-            tmp = fabc((a,b,c)) * fabc((a,d,e))
+            tmp = fSU3((a,b,c)) * fSU3((a,d,e))
             if tmp != 0:
 
 
               for i in range(3):
                 for j in range(3):
 
+                  if st_num < 10:
+                    print (a+1, b+1, c+1, a+1, d+1, e+1)
+
 
                   O6state[st_num] = in_state[st_num]
                   O6norm[st_num] = in_state_norm[st_num]
-
-                  print ("with coeff . ", O6norm[st_num])
                   
                   O6state[st_num], O6norm[st_num] = action_A_or_Adag((j,c), O6state[st_num], O6norm[st_num], 1)
-                  print ("with coeff .. ", O6norm[st_num])
                   O6state[st_num], O6norm[st_num] = action_A_or_Adag((i,d),O6state[st_num], O6norm[st_num], 1)
-                  print ("with coeff ... ", O6norm[st_num])
                   O6state[st_num], O6norm[st_num] = action_A_or_Adag((j,e),O6state[st_num], O6norm[st_num], 0)
-                  print ("with coeff .... ", O6norm[st_num])
+                  #print ("with coeff .... ", O6norm[st_num])
                   O6state[st_num], O6norm[st_num] = action_A_or_Adag((i,b),O6state[st_num], O6norm[st_num], 0)
                   O6totalstate[st_num] = O6state[st_num]
                   O6totalnorm[st_num] = O6norm[st_num]
-
-                  print (O6state[st_num].reshape(24), "with coeff", O6norm[st_num])
-
 
                   O6state[st_num] = in_state[st_num]
                   O6norm[st_num] = in_state_norm[st_num]
@@ -264,8 +272,6 @@ def OP6(in_state, in_state_norm):
                   O6totalstate[st_num] += O6state[st_num]
                   O6totalnorm[st_num] += O6norm[st_num]
 
-                  print (O6state[st_num].reshape(24), "with coeff", O6norm[st_num])
-
                   O6state[st_num] = in_state[st_num]
                   O6norm[st_num] = in_state_norm[st_num]
 
@@ -274,15 +280,13 @@ def OP6(in_state, in_state_norm):
                   O6state[st_num], O6norm[st_num] = action_A_or_Adag((j,c),O6state[st_num], O6norm[st_num], 0)
                   O6state[st_num], O6norm[st_num] = action_A_or_Adag((i,b),O6state[st_num], O6norm[st_num], 0)
 
-                  print (O6state[st_num].reshape(24), "with coeff", O6norm[st_num])
-
                   O6totalstate[st_num] += O6state[st_num]
                   O6totalnorm[st_num] += O6norm[st_num]
 
                   O6totalnorm[st_num] *= tmp
                   st_num += 1
 
-                  sys.exit(1)
+                  #sys.exit(1)
 
 
   return  O6totalstate, O6totalnorm
@@ -305,6 +309,13 @@ if __name__ == "__main__":
     print ("O4 |vac> :",out_state4[i].reshape(size_col), "with coefficient", round(norm_out_state4[i],3)) # 3420 states # 4-boson state 
     print ("O5 |vac> :",out_state5[i].reshape(size_col), "with coefficient", round(norm_out_state5[i],3)) # 3420 states # 2-boson state 
     print ("O6 O4 |vac> :",out_state64[i].reshape(size_col), "with coefficient", round(norm_out_state64[i],3)) # 3420 states
+    # O6 O4 |vac> : [0. 4. 8. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.] with coefficient 45.798
+    # for f_123*f_123 * [(A_12 * A_13 * A†_12 * A†_13) + (A_12 * A_12 * A†_13 * A†_13) +  (A_12 * A_13 * A†_12 * A†_13)] * O4 | vac. >
+    # is for i=j=1 
+    # for f_123*f_123 * [(A_12 * A_23 * A†_12 * A†_23) + (A_12 * A_12 * A†_23 * A†_23) +  (A_12 * A_23 * A†_12 * A†_23)] * O4 | vac. >
+    # i=1, j=2 f_123 * f_123
+
+
 
 
 
