@@ -35,7 +35,7 @@ vac = np.zeros((3, dimG)) # Vacuum state
 def fSU3(w):
 
   if len(w) != 3:
-    print ("Needs three indices for computing f_abc, exiting!")
+    print ("Needs three indices for computing SU(3) structure constant, exiting!")
     sys.exit(1)
 
   out = 0.0
@@ -58,24 +58,23 @@ def action_A_or_Adag(v, in_vec, in_coeff, choice):
 
   out_vec = in_vec
 
-  if len(v) != 2: 
-    print ("Operator should carry two indices")
+  if len(v) != 2 or v[0] > 2 or v[1] > 7: 
+    print ("Operator should carry two indices with proper range")
     sys.exit(1)
 
   if choice == 1:  # Creation
     out_vec[v[0]][v[1]] = in_vec[v[0]][v[1]] + 1
     out_coeff = in_coeff * np.sqrt(out_vec[v[0]][v[1]]) 
   
-  if choice == 0:  # Annihilation 
+  elif choice == 0 and out_vec[v[0]][v[1]] > 0:  # Annihilation 
     tmp = np.sqrt((out_vec[v[0]][v[1]]))
     out_vec[v[0]][v[1]] = out_vec[v[0]][v[1]] - 1
+    out_coeff = in_coeff * tmp
 
-    if tmp >= 0:
-      out_coeff = in_coeff * tmp 
-    else:
-      print ("Imaginary coefficient!", tmp, " Exit")
-      #sys.exit(1)
-      return 0 
+  elif choice == 0 and out_vec[v[0]][v[1]] == 0:
+    print ("WARNING: Annihilation operator acting on |0>", in_vec, v)
+    sys.exit(1) 
+       
 
 
   return out_vec, out_coeff
@@ -214,9 +213,13 @@ def OP5(in_state, in_state_norm):
                   O5state[st_num] = in_state
                   O5norm[st_num] = in_state_norm
 
+
                   O5state[st_num], O5norm[st_num] = action_A_or_Adag((j,e),O5state[st_num], O5norm[st_num], 1)
                   O5state[st_num], O5norm[st_num] = action_A_or_Adag((i,d),O5state[st_num], O5norm[st_num], 1)
                   O5state[st_num], O5norm[st_num] = action_A_or_Adag((j,c),O5state[st_num], O5norm[st_num], 1)
+
+                  print ("X", O5state[st_num], "and", i, b) # .... 
+                  # TODO # CHECKPOINT 
                   O5state[st_num], O5norm[st_num] = action_A_or_Adag((i,b),O5state[st_num], O5norm[st_num], 0)
                   O5norm[st_num] *= tmp
                   st_num += 1
@@ -299,8 +302,8 @@ if __name__ == "__main__":
   out_state2, norm_out_state2 = OP2(vac, 1.0)
   out_state32, norm_out_state32 = OP3(O2state, O2norm)
   out_state4, norm_out_state4 = OP4(vac, 1.0) 
-  out_state5, norm_out_state5 = OP5(vac, 1.0) 
-  out_state64, norm_out_state64 = OP6(O4state, O4norm) 
+  out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
+  #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
 
   for i in range (10): # Print first 10 states of each type for now. 
     print ("O1 |vac> :", out_state1[i].reshape(size_col), "with coefficient", round(norm_out_state1[i],3)) # 24 states #2-boson state 
