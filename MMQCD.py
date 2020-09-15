@@ -30,8 +30,15 @@ O6totalstate = np.zeros((n_h, 3, dimG))
 O6totalnorm = np.zeros((n_h))
 vac = np.zeros((3, dimG)) # Vacuum state
 
+
+def list_even(a,b,c):
+  return (list(itertools.permutations((a,b,c)))[0], list(itertools.permutations((a,b,c)))[3], list(itertools.permutations((a,b,c)))[4]) 
+def list_odd(a,b,c):
+  return (list(itertools.permutations((a,b,c)))[1], list(itertools.permutations((a,b,c)))[2], list(itertools.permutations((a,b,c)))[5]) 
 # Setting up SU(3) structure constants 
 # Note that standard f_123 is denoted as f_012 here.
+
+
 def fSU3(w):
 
   if len(w) != 3:
@@ -39,16 +46,26 @@ def fSU3(w):
     sys.exit(1)
 
   out = 0.0
-  if w in list(itertools.permutations((0,1,2))): 
+  if w in list_even(0,1,2): 
     out = 1.0
-  if w in list(itertools.permutations((0,3,6))) or w in list(itertools.permutations((1,3,5))): 
+  if w in list_odd(0,1,2):  # HERE
+    out = -1.0
+  if w in list_even(0,3,6) or w in list_even(1,3,5): 
     out = 0.5
-  if w in list(itertools.permutations((1,4,6))) or w in list(itertools.permutations((2,3,4))): 
-    out = 0.5 
-  if w in list(itertools.permutations((0,4,5))) or w in list(itertools.permutations((2,5,6))): 
+  if w in list_odd(0,3,6)  or w in list_odd(1,3,5): 
     out = -0.5
-  if w in list(itertools.permutations((3,4,7))) or w in list(itertools.permutations((5,6,7))): 
-    out = np.sqrt(3)/2.0
+  if w in list_even(1,4,6) or w in list_even(2,3,4): 
+    out = 0.5 
+  if w in list_odd(1,4,6)  or w in list_odd(2,3,4): 
+    out = -0.5
+  if w in list_even(0,4,5) or w in list_even(2,5,6): 
+    out = -0.5 
+  if w in list_odd(0,4,5)  or w in list_odd(2,5,6): 
+    out = 0.5
+  if w in list_even(3,4,7) or w in list_even(5,6,7): 
+    out = np.sqrt(3)/2.0 
+  if w in list_odd(3,4,7)  or w in list_odd(5,6,7): 
+    out = -np.sqrt(3)/2.0 
 
   return out 
 
@@ -303,8 +320,10 @@ if __name__ == "__main__":
   out_state32, norm_out_state32 = OP3(O2state, O2norm)
   out_state4, norm_out_state4 = OP4(vac, 1.0) 
   out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
-  #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
 
+  '''
+  #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
+  
   for i in range (10): # Print first 10 states of each type for now. 
     print ("O1 |vac> :", out_state1[i].reshape(size_col), "with coefficient", round(norm_out_state1[i],3)) # 24 states #2-boson state 
     print ("O2 |vac> :", out_state2[i].reshape(size_col), "with coefficient", round(norm_out_state2[i],3)) # 324 states  #3-boson state 
@@ -317,6 +336,7 @@ if __name__ == "__main__":
     # is for i=j=1 
     # for f_123*f_123 * [(A_12 * A_23 * A†_12 * A†_23) + (A_12 * A_12 * A†_23 * A†_23) +  (A_12 * A_23 * A†_12 * A†_23)] * O4 | vac. >
     # i=1, j=2 f_123 * f_123
+  '''
 
 
 
