@@ -37,6 +37,7 @@ def list_odd(a,b,c):
   return (list(itertools.permutations((a,b,c)))[1], list(itertools.permutations((a,b,c)))[2], list(itertools.permutations((a,b,c)))[5]) 
 # Setting up SU(3) structure constants 
 # Note that standard f_123 is denoted as f_012 here.
+# Similarly, for d_abc 
 
 
 def fSU3(w):
@@ -48,7 +49,7 @@ def fSU3(w):
   out = 0.0
   if w in list_even(0,1,2): 
     out = 1.0
-  if w in list_odd(0,1,2):  # HERE
+  if w in list_odd(0,1,2):
     out = -1.0
   if w in list_even(0,3,6) or w in list_even(1,3,5): 
     out = 0.5
@@ -68,6 +69,31 @@ def fSU3(w):
     out = -np.sqrt(3)/2.0 
 
   return out 
+
+
+def dSU3(w):
+
+  if len(w) != 3:
+    print ("Needs three indices for computing SU(3) structure constant, exiting!")
+    sys.exit(1)
+
+  out = 0.0
+  if w in list(itertools.permutations((0,0,7))) or w in list(itertools.permutations((1,1,7))) or w in list(itertools.permutations((2,2,7))):
+    out = 1.0/np.sqrt(3) 
+  if w in list(itertools.permutations((7,7,7))):
+    out = -1.0/np.sqrt(3) 
+  if w in list(itertools.permutations((3,3,7))) or w in list(itertools.permutations((4,4,7))):
+    out = -0.50/np.sqrt(3)
+  if w in list(itertools.permutations((5,5,7))) or w in list(itertools.permutations((6,6,7))): 
+    out = -0.50/np.sqrt(3)
+  if w in list(itertools.permutations((0,3,5))) or w in list(itertools.permutations((0,4,6))) or w in list(itertools.permutations((1,4,5))): 
+    out = 0.50
+  if w in list(itertools.permutations((2,3,3))) or w in list(itertools.permutations((2,4,4))): 
+    out = 0.50
+  if w in list(itertools.permutations((1,3,6))) or w in list(itertools.permutations((2,5,5))) or w in list(itertools.permutations((2,6,6))): 
+    out = -0.50
+
+  return out
 
 
 def action_A_or_Adag(v, in_vec, in_coeff, choice):
@@ -318,8 +344,9 @@ if __name__ == "__main__":
   out_state1, norm_out_state1 = OP1(vac, 1.0) 
   out_state2, norm_out_state2 = OP2(vac, 1.0)
   out_state32, norm_out_state32 = OP3(O2state, O2norm)
-  out_state4, norm_out_state4 = OP4(vac, 1.0) 
-  out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
+  #out_state4, norm_out_state4 = OP4(vac, 1.0) 
+  #out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
+
 
   '''
   #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
