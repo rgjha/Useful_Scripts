@@ -29,6 +29,8 @@ O6norm = np.zeros((n_h))
 O6totalstate = np.zeros((n_h, 3, dimG))
 O6totalnorm = np.zeros((n_h))
 vac = np.zeros((3, dimG)) # Vacuum state
+Lambda = np.zeros((dimG+1,3,3),dtype=complex) # Gell-Mann matrices 
+Sigma = np.zeros((4,2,2),dtype=complex) # Pauli matrices 
 
 
 def list_even(a,b,c):
@@ -94,6 +96,32 @@ def dSU3(w):
     out = -0.50
 
   return out
+
+
+def Pauli():
+  
+  Sigma[0] = [[1.0,0],[0,1.0]]
+  Sigma[1] = [[0,1.0],[1.0,0]] 
+  Sigma[2] = [[0, complex(0,-1.0)],[complex(0,1.0),0]]
+  Sigma[3] = [[1,0],[0,-1]] 
+
+  return Sigma
+
+
+
+def makeLambda():
+ 
+  Lambda[0] = [[1,0,0],[0,1,0],[0,0,1]]
+  Lambda[1] = [[0,0.5,0],[0.5,0,0],[0,0,0]]
+  Lambda[2] = [[0,complex(0,-0.5),0],[complex(0,0.5),0,0],[0,0,0]]
+  Lambda[3] = [[0.5,0,0],[0,-0.5,0],[0,0,0]]
+  Lambda[4] = [[0,0,0.5],[0,0,0],[0.5,0,0]]
+  Lambda[5] = [[0,0,complex(0,-0.5)],[0,0,0],[complex(0,0.5),0,0]]
+  Lambda[6] = [[0,0,0],[0,0,0.5],[0,0.5,0]]
+  Lambda[7] = [[0,0,0],[0,0,complex(0,-0.5)],[0,complex(0,0.5),0]]
+  Lambda[8] = [[1.0/(np.sqrt(3)*2),0,0],[0,1.0/(np.sqrt(3)*2),0],[0,0,-1/np.sqrt(3)]]
+
+  return Lambda
 
 
 def action_A_or_Adag(v, in_vec, in_coeff, choice):
@@ -338,7 +366,15 @@ def OP6(in_state, in_state_norm):
   return  O6totalstate, O6totalnorm
 
 
+def pretty_print_matrix(matrix):
+  print(('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix])))
+
+
 if __name__ == "__main__":
+
+
+  makeLambda()
+  Pauli()
 
 
   out_state1, norm_out_state1 = OP1(vac, 1.0) 
@@ -347,6 +383,15 @@ if __name__ == "__main__":
   #out_state4, norm_out_state4 = OP4(vac, 1.0) 
   #out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
 
+
+  # Construct O_f like A_3 ⊗ \sigma_i ⊗ B_3
+
+  for A, i, a in itertools.product(range(4), range(3), range(4)):
+    print ("Indices are ", A, i, a)
+    OF = np.kron(Lambda[A], Sigma[i], Lambda[a])
+
+
+  
 
   '''
   #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
