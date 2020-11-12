@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import random
 import math
 from matplotlib.pyplot import *
@@ -9,6 +8,7 @@ import numpy as np
 import random
 from scipy.linalg import expm
 from numpy import linalg as LA
+from numpy.linalg import matrix_power
 import time 
 import datetime 
 import sys
@@ -22,18 +22,17 @@ if len(sys.argv) < 3:
 READIN = int(sys.argv[1])
 SAVE = int(sys.argv[2])
 
-
 #************************************************
 
-NCOL = 3   # Rank of gauge group 
-g=0.1
+NCOL = 100   # Rank of gauge group 
+Niters_sim=500
+g=1.1
 c=0.1
 kappa=0.0
-GENS = NCOL**2 - 1
-NMAT = 3 
-eps=0.01 
-nsteps = int(0.1/eps)
-Niters_sim=100
+NMAT = 1 
+eps=0.011 
+nsteps = 20
+
 #************************************************
 
 X = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
@@ -53,41 +52,50 @@ print ("NCOL=" "%3.0f " ","  " and 'g' = " " %4.2f" % (NCOL, g))
 print ("---------------------------------------------------------------------------------")
 
 #************************************************
+
 def dagger(a):
 
     return np.transpose(a).conj()
+
 #************************************************
-def comm(A,B):
-    
-    return np.dot(A,B) - np.dot(B,A)
+
+def box_muller():
+
+    PI = 2.0*math.asin(1.0);    
+    r = random.uniform(0,1)
+    s = random.uniform(0,1)
+    p = np.sqrt(-2.0*np.log(r)) * math.sin(2.0*PI*s)
+    q = np.sqrt(-2.0*np.log(r)) * math.cos(2.0*PI*s)
+
+    return p,q
+
 #************************************************
-def unit_matrix():
-    
-    matrix = np.zeros((NCOL, NCOL), dtype=complex)
-    for i in range (NCOL):
-        matrix[i][i] = complex(1.0,0.0)
-    return matrix
-#************************************************
+
 def copy_fields(b):
     
     for j in range(NMAT):
         X_bak[j] = b[j]
 
     return X_bak
+
 #************************************************
+
 def rejected_go_back_old_fields(a):
         
     for j in range(NMAT):
         X[j] = a[j]
 
     return X
+
 #************************************************
+
 def refresh_mom():
     
     for j in range (NMAT):
         mom_X[j] = random_hermitian()
 
     return mom_X
+
 #************************************************
 
 def pretty_print_matrix(matrix):
@@ -106,158 +114,84 @@ def random_hermitian():
 
         for j in range (i+1, NCOL):
 
-            r1 = np.random.normal(0,1)
-            r2 = np.random.normal(0,1)
+            r1, r2 = box_muller()
 
             tmp[i][j] = complex(r1, r2)/math.sqrt(2)
             tmp[j][i] = complex(r1, -r2)/math.sqrt(2)
 
     for i in range (NCOL):
 
-        r1 = np.random.normal(0,1)
+        r1, r2 = box_muller()
         tmp[i][i] = complex(r1, 0.0)
 
 
     return tmp 
 
 #************************************************
-def kinetic_energy(mom_X):
 
-    s = 0.0 
+def hamil(X,mom_X):
+
+    ham = action(X) 
     for j in range (NMAT):
-        s += 0.50 * np.trace(np.dot(dagger(mom_X[j]),mom_X[j]))
-    return s.real  
-#************************************************          
-def bosonic_action(X):
+        ham += 0.50 * np.trace(np.dot(mom_X[j],mom_X[j])).real 
+
+    return ham  
+
+#************************************************ 
+
+def action(X):
 
     b_action = 0.0 
 
-    #print ("X1 = ", pretty_print_matrix(X[0]))
-    #print ("X2 = ", pretty_print_matrix(X[1]))
-    #print ("X3 = ", pretty_print_matrix(X[2]))
-
     for i in range (NMAT):
-        b_action -= np.dot(X[i],X[i]) 
+        b_action = 0.50 * np.trace(np.dot(X[i],X[i])).real  
+        b_action += (g/4.0)* np.trace((matrix_power(X[i], 4))).real
 
-    for i in range (NMAT):
-        b_action -= (g/NCOL)* np.dot(np.dot(X[i],X[i]),np.dot(X[i],X[i]))
+    return b_action*NCOL
 
-    for i in range (NMAT-1):
-        b_action += (2.0*c)* np.dot(X[i],X[i+1]) 
-
-    b_action += kappa*np.dot(X[NMAT-1],X[0])
-
-    #print ("Act is", np.trace(b_action).real)
-
-    return np.trace(b_action).real
 #************************************************
 
 def bosonic_force(X): 
 
-    tmp_X = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
+    f_X = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
     
     for i in range (NMAT): 
 
-        tmp_X[i] = np.zeros((NCOL, NCOL), dtype=complex)
+        f_X[i] = (X[i] + (g*(matrix_power(X[i], 3))))*NCOL
 
-        for j in range (NMAT):
-
-            ..... TODO .... 
-
-        f_X[i] = ...
-
-# Make AH
-
-        for k in range (NCOL):
-
-            f_X[i][k][k] =  complex(0.0,0.0)
-
-            for l in range (k+1, NCOL):
-
-                tr = 0.5 * (f_X[i][k][l].real - f_X[i][l][k].real)
-                f_X[i][k][l] = complex(tr, f_X[i][k][l].imag)
-                f_X[i][l][k] = complex(-tr, f_X[i][l][k].imag)
-                tr = 0.5 * (f_X[i][k][l].imag + f_X[i][l][k].imag)
-                f_X[i][k][l] = complex(f_X[i][k][l].real,tr) 
-                f_X[i][l][k] = complex(f_X[i][l][k].real,tr) 
-
-        # Check if forces f_X are hermtian => should be!
-        # Tracelessness need not be checked as imposed some lines above
-        if LA.norm(dagger(f_X[i])-f_X[i]) > 1e-14: 
-            print ("f_X is not H", LA.norm(dagger(f_X[i])+f_X[i]))
-
-
-    return f_X 
+    return f_X
 
 #************************************************
 
-def leapfrog(X,mom_X, eps):
+def leapfrog(X,eps):
+
+    mom_X = refresh_mom()
+    ham_init = hamil(X,mom_X)
 
 
     for j in range(NMAT):
-        
-        X[j] = X[j] + (mom_X[j] * eps/2.0)
+        X[j] = X[j] + (mom_X[j] * eps * 0.50)
+
+    for j in range(NMAT):
+
+        for i in range(1, nsteps):
+            f_X = bosonic_force(X)
+            mom_X[j] = mom_X[j] - (f_X[j]*eps)
+            X[j] = X[j] + (mom_X[j]*eps)
+
 
     f_X = bosonic_force(X)
 
-
-    # Middle steps 
-    for step in range(nsteps):
-
-        for j in range(NMAT):
-
-            
-            mom_X[j] = mom_X[j] + (f_X[j] * eps) 
-            X[j] = X[j] + (mom_X[j] * eps)
-            
-        f_X = bosonic_force(X)
-
-    # Last 'half' step
-
     for j in range(NMAT):
         
-        mom_X[j] = mom_X[j] + (f_X[j] * eps)
-        X[j] = X[j] + (mom_X[j] * eps/2.0)
+        mom_X[j] = mom_X[j] - (f_X[j] * eps)
+        X[j] = X[j] + (mom_X[j] * eps * 0.50)
+
+
+    ham_final = hamil(X,mom_X)
         
 
-    return X, mom_X, f_X
-
-
-def update(X):
-
-    mom_X = refresh_mom()
-    KE = kinetic_energy(mom_X)
-    ba = bosonic_action(X)
-    start_act =  ba + KE
-    sys.exit(1)
-    #print("start action: commutator = " , ba , "and gauge+scalar momenta =" , KE)
-    X_bak = copy_fields(X) 
-    X, mom_X, f_X = leapfrog(X,mom_X,eps)
-    KE = kinetic_energy(mom_X)
-    ba = bosonic_action(X)
-    end_act = ba + KE
-    #print("end action: commutator = " , ba , "and gauge+scalar momenta =" , KE)
-    change = end_act - start_act
-    HAM.append(abs(change))
-    expDS.append(np.exp(-1.0*change))   
-    # <exp(Hold-Hnew)> = 1 # https://www.osti.gov/servlets/purl/6871614
-
-    if np.exp(-change) < random.uniform(0,1):
-        X = rejected_go_back_old_fields(X_bak)
-        print(("REJECT: deltaS = " "%8.7f " " startS = " "%8.7f" " endS = " "%8.7f" % (change, start_act, end_act)))
-    else:   
-        print(("ACCEPT: deltaS = " "%8.7f " "startS = " "%8.7f" " endS = " "%8.7f" % (change, start_act, end_act)))
-
-
-    ACT.append(ba)
-    MOM.append(float(KE/GENS))
-
-    if MDTU%1 == 0:
-
-        tmp = float(ba/(NCOL*NCOL))
-        f4.write("%4.8f\n" % tmp)
-
-    return X
+    return X, ham_init, ham_final
 
 
 #***************The main routine****************************
@@ -266,33 +200,44 @@ if __name__ == '__main__':
 
 
     if READIN ==0:
+        for i in range (NMAT): 
+            for j in range (NCOL):
+                for k in range (NCOL):
+                    X[i][j][k] = complex(0.0,0.0) 
 
-        for i in range (NMAT):  
-            X[i] = random_hermitian()
-            # Checked that X = X^dagger
-            #print (pretty_print_matrix(X[i])) 
-            #sys.exit(1)
-            
+
     if READIN ==1:
         print ("Reading old config.")
-
         with open("config.txt") as f2:
             A = np.loadtxt(f2).view(complex)
         f2.close()
 
         for i in range (NMAT):
-            for a in range (NCOL):
-                for b in range (NCOL):
+            for j in range (NCOL):
+                for k in range (NCOL):
+                    X[i][j][k] = A[(NCOL*i)+j][k] 
 
-                    X[i][a][b] = A[(NCOL*i)+a][b] 
 
-
-    f4 = open("action.txt", "w")
 
     for MDTU in range (Niters_sim):
-        X = update(X) 
+        
+        X_bak = copy_fields(X) 
+        X, start, end = leapfrog(X, eps) 
 
-    f4.close()
+        change = end - start  
+        # <exp(Hold-Hnew)> = 1 # https://www.osti.gov/servlets/purl/6871614
+
+        if np.exp(-change) < random.uniform(0,1):
+            X = rejected_go_back_old_fields(X_bak)
+            print(("REJECT: deltaS = " "%8.7f " " startS = " "%8.7f" " endS = " "%8.7f" % (change, start, end)))
+        else:   
+            print(("ACCEPT: deltaS = " "%8.7f " "startS = " "%8.7f" " endS = " "%8.7f" % (change, start, end)))
+
+
+        if MDTU%2 == 0:
+
+            tmp = np.trace(np.dot(X[i],X[i])).real
+            ACT.append(tmp/NCOL)
 
 
     if SAVE ==1:
@@ -303,17 +248,15 @@ if __name__ == '__main__':
             np.savetxt(f1, X[i].view(float), delimiter= " ")  
         f1.close()
 
-    ACT = [x/GENS for x in ACT]
       
     MDTU = np.linspace(0, Niters_sim, Niters_sim, endpoint=True)
-    plt.ylabel(r'$\Delta$ Action')
+    plt.ylabel(r'Tr(Xsq)')
     plt.xlabel('MDTU')
     plt.figure(1)
     plot(MDTU, ACT)
-    plot(MDTU, MOM) 
     plt.show()
 
-    print(("<Action>", np.mean(ACT), "+/-", (np.std(ACT)/np.sqrt(np.size(ACT) - 1.0))))
-    print(("<exp(-deltaH)>", np.mean(expDS), "+/-", np.std(expDS)/np.sqrt(np.size(expDS) - 1.0))) # This should be 1 within errors!
-    print ("Delta 'H' is", np.mean(HAM), "+/-", np.std(HAM)/np.sqrt(np.size(HAM) - 1.0))  # This should scale with dtau!
+    print(("<Tr X^2 / NCOL>", np.mean(ACT), "+/-", (np.std(ACT)/np.sqrt(np.size(ACT) - 1.0))))
     print(("COMPLETED: " , datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+
