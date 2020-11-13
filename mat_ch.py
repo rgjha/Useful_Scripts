@@ -24,25 +24,29 @@ SAVE = int(sys.argv[2])
 
 #************************************************
 
-NCOL = 100   # Rank of gauge group 
-Niters_sim=500
-g=1.1
+NCOL = 150   # Rank of gauge group 
+Niters_sim=100
+g=0.50
 c=0.1
 kappa=0.0
-NMAT = 1 
-eps=0.011 
-nsteps = 20
+NMAT = 3 
+eps=0.005 
+nsteps = 30
 
 #************************************************
 
 X = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
+#ACT = np.zeros((NMAT, Niters_sim))
 mom_X = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
 f_X = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
 X_bak = np.zeros((NMAT, NCOL, NCOL), dtype=complex)
 HAM = []
 expDS = [] 
 EOS = [] 
-ACT = [] 
+ACT = []
+#print ("Shape of ACT", np.shape(ACT))
+ACT1 = []
+ACT2 = []
 MOM = []
 
 #************************************************
@@ -144,7 +148,7 @@ def action(X):
     b_action = 0.0 
 
     for i in range (NMAT):
-        b_action = 0.50 * np.trace(np.dot(X[i],X[i])).real  
+        b_action += 0.50 * np.trace(np.dot(X[i],X[i])).real  
         b_action += (g/4.0)* np.trace((matrix_power(X[i], 4))).real
 
     return b_action*NCOL
@@ -233,11 +237,18 @@ if __name__ == '__main__':
         else:   
             print(("ACCEPT: deltaS = " "%8.7f " "startS = " "%8.7f" " endS = " "%8.7f" % (change, start, end)))
 
+        tmp0 = np.trace(np.dot(X[0],X[0])).real
+        ACT.append(tmp0/NCOL)
 
-        if MDTU%2 == 0:
+        if NMAT == 2:
+            tmp1 = np.trace(np.dot(X[1],X[1])).real
+            ACT1.append(tmp1/NCOL)
 
-            tmp = np.trace(np.dot(X[i],X[i])).real
-            ACT.append(tmp/NCOL)
+        if NMAT == 3:
+            tmp1 = np.trace(np.dot(X[1],X[1])).real
+            ACT1.append(tmp1/NCOL)
+            tmp2 = np.trace(np.dot(X[2],X[2])).real
+            ACT2.append(tmp2/NCOL)
 
 
     if SAVE ==1:
@@ -253,10 +264,23 @@ if __name__ == '__main__':
     plt.ylabel(r'Tr(Xsq)')
     plt.xlabel('MDTU')
     plt.figure(1)
-    plot(MDTU, ACT)
+
+
+    if NMAT == 2:
+        plot(MDTU, ACT)
+        plot(MDTU, ACT1)
+
+
+    if NMAT == 3:
+        plot(MDTU, ACT)
+        plot(MDTU, ACT1)
+        plot(MDTU, ACT2)
+
     plt.show()
 
-    print(("<Tr X^2 / NCOL>", np.mean(ACT), "+/-", (np.std(ACT)/np.sqrt(np.size(ACT) - 1.0))))
+    print(("<Tr X1^2 / NCOL>", np.mean(ACT), "+/-", (np.std(ACT)/np.sqrt(np.size(ACT) - 1.0))))
+    print(("<Tr X2^2 / NCOL>", np.mean(ACT1), "+/-", (np.std(ACT1)/np.sqrt(np.size(ACT1) - 1.0))))
+    print(("<Tr X3^2 / NCOL>", np.mean(ACT2), "+/-", (np.std(ACT2)/np.sqrt(np.size(ACT2) - 1.0))))
     print(("COMPLETED: " , datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
 
