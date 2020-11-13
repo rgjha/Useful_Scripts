@@ -99,18 +99,14 @@ def dSU3(w):
 
 
 def Pauli():
-  
   Sigma[0] = [[1.0,0],[0,1.0]]
   Sigma[1] = [[0,1.0],[1.0,0]] 
   Sigma[2] = [[0, complex(0,-1.0)],[complex(0,1.0),0]]
   Sigma[3] = [[1,0],[0,-1]] 
-
   return Sigma
 
 
-
 def makeLambda():
- 
   Lambda[0] = [[1,0,0],[0,1,0],[0,0,1]]
   Lambda[1] = [[0,0.5,0],[0.5,0,0],[0,0,0]]
   Lambda[2] = [[0,complex(0,-0.5),0],[complex(0,0.5),0,0],[0,0,0]]
@@ -120,7 +116,6 @@ def makeLambda():
   Lambda[6] = [[0,0,0],[0,0,0.5],[0,0.5,0]]
   Lambda[7] = [[0,0,0],[0,0,complex(0,-0.5)],[0,complex(0,0.5),0]]
   Lambda[8] = [[1.0/(np.sqrt(3)*2),0,0],[0,1.0/(np.sqrt(3)*2),0],[0,0,-1/np.sqrt(3)]]
-
   return Lambda
 
 
@@ -370,6 +365,34 @@ def pretty_print_matrix(matrix):
   print(('\n'.join(['\t'.join([str(cell) for cell in row]) for row in matrix])))
 
 
+def matprint(mat, fmt="g"):
+    col_maxes = [max([len(("{:"+fmt+"}").format(x)) for x in col]) for col in mat.T]
+    for x in mat:
+        for i, y in enumerate(x):
+            print(("{:"+str(col_maxes[i])+fmt+"}").format(y), end="  ")
+        print("")
+
+def Op_2ferm(w):
+
+  if len(w) != 3:
+    print ("Needs three indices --> flavor spin color")
+    sys.exit(1)
+
+  OF = np.kron(np.kron(Lambda[w[0]], Sigma[w[1]]), Lambda[w[2]])
+  return OF 
+
+def Op_4ferm(w1, w2):
+
+  if len(w1) != 3  or len(w2) != 3:
+    print ("Needs three indices --> flavor spin color")
+    sys.exit(1)
+
+  OF = np.kron(np.kron(Lambda[w1[0]], Sigma[w1[1]]), Lambda[w1[2]])
+  OF2 = np.kron(np.kron(Lambda[w2[0]], Sigma[w2[1]]), Lambda[w2[2]])
+  res = np.dot(OF, OF2)
+  return res
+
+
 if __name__ == "__main__":
 
 
@@ -377,21 +400,22 @@ if __name__ == "__main__":
   Pauli()
 
 
-  out_state1, norm_out_state1 = OP1(vac, 1.0) 
-  out_state2, norm_out_state2 = OP2(vac, 1.0)
-  out_state32, norm_out_state32 = OP3(O2state, O2norm)
+  #out_state1, norm_out_state1 = OP1(vac, 1.0) 
+  #out_state2, norm_out_state2 = OP2(vac, 1.0)
+  #out_state32, norm_out_state32 = OP3(O2state, O2norm)
   #out_state4, norm_out_state4 = OP4(vac, 1.0) 
   #out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
 
 
   # Construct O_f like A_3 ⊗ \sigma_i ⊗ B_3
 
-  for A, i, a in itertools.product(range(4), range(3), range(4)):
-    print ("Indices are ", A, i, a)
-    OF = np.kron(Lambda[A], Sigma[i], Lambda[a])
+  tmp0 = Op_2ferm((1,2,2))
+  tmp = Op_4ferm((1,2,2),(1,2,2))
+
+  print ("Mat 4f", matprint(tmp))
 
 
-  
+
 
   '''
   #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
