@@ -7,6 +7,7 @@ import collections
 import itertools 
 from sympy import LeviCivita
 from numpy.random import permutation
+from opt_einsum import contract
 
 Nc = 3     # Color group 
 dimG = (Nc**2) - 1
@@ -108,14 +109,15 @@ def Pauli():
 
 def makeLambda():
   Lambda[0] = [[1,0,0],[0,1,0],[0,0,1]]
-  Lambda[1] = [[0,0.5,0],[0.5,0,0],[0,0,0]]
-  Lambda[2] = [[0,complex(0,-0.5),0],[complex(0,0.5),0,0],[0,0,0]]
-  Lambda[3] = [[0.5,0,0],[0,-0.5,0],[0,0,0]]
-  Lambda[4] = [[0,0,0.5],[0,0,0],[0.5,0,0]]
-  Lambda[5] = [[0,0,complex(0,-0.5)],[0,0,0],[complex(0,0.5),0,0]]
-  Lambda[6] = [[0,0,0],[0,0,0.5],[0,0.5,0]]
-  Lambda[7] = [[0,0,0],[0,0,complex(0,-0.5)],[0,complex(0,0.5),0]]
-  Lambda[8] = [[1.0/(np.sqrt(3)*2),0,0],[0,1.0/(np.sqrt(3)*2),0],[0,0,-1/np.sqrt(3)]]
+  Lambda[1] = [[0,1,0],[1,0,0],[0,0,0]]
+  Lambda[2] = [[0,complex(0,-1),0],[complex(0,1),0,0],[0,0,0]]
+  Lambda[3] = [[1,0,0],[0,-1,0],[0,0,0]]
+  Lambda[4] = [[0,0,1],[0,0,0],[1,0,0]]
+  Lambda[5] = [[0,0,complex(0,-1)],[0,0,0],[complex(0,1),0,0]]
+  Lambda[6] = [[0,0,0],[0,0,1],[0,1,0]]
+  Lambda[7] = [[0,0,0],[0,0,complex(0,-1)],[0,complex(0,1),0]]
+  Lambda[8] = [[1.0/(np.sqrt(3)),0,0],[0,1.0/(np.sqrt(3)),0],[0,0,-2/np.sqrt(3)]]
+
   return Lambda
 
 
@@ -392,6 +394,53 @@ def Op_4ferm(w1, w2):
   res = np.dot(OF, OF2)
   return res
 
+def vev(s1,s2):
+
+  # https://numpy.org/doc/stable/reference/generated/numpy.outer.html 
+  # Outer product 
+
+  if len(s1) != len(s2):
+    return 0
+  else:
+    return np.linalg.det(np.einsum('i,j->ij', s1, s2)) 
+
+
+def di_meson_S_element(P1,P2,O1,O2):
+
+  out = 0.0
+  out = np.trace(P1 @ O1) * np.trace(P2 @ O2)
+  out +=  np.trace(P1 @ O2) * np.trace(P2 @ O1)
+  out -= np.trace(P1 @ O1 @ P2 @ O2)
+  out -= np.trace(P1 @ O2 @ P2 @ O1)
+
+  return out 
+
+
+def di_meson_S_alt(a,b,c,d):
+
+  '''
+  Eps = np.zeros((3,3,3))
+
+  for a in range (3):
+    for b in range (3):
+      for c in range (3):
+
+        Eps[a][b][c] = LeviCivita(a, b, c)
+  '''
+
+  Id = np.eye(18) 
+  n = 18 
+  t1 = contract('pk,ql->pkql', np.eye(n,n), np.eye(n,n))
+
+  #d1 = np.einsum('pm, qn, ik, jl ->ij', np.eye(4), s2)
+  tmp1 = np.subtract(contract('pk, ql->pkql', Id, Id), contract('pl, qk', Id, Id))
+  tmp2 = np.subtract(contract('im, jn', Id, Id), contract('mj, ni', Id, Id)) 
+  out = contract('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
+
+  return out
+
+
+
 
 if __name__ == "__main__":
 
@@ -399,25 +448,65 @@ if __name__ == "__main__":
   makeLambda()
   Pauli()
 
+  # Construct O_f like 
+  O1 = Op_2ferm((1,1,0))  # T_1 ⊗ \sigma_1 ⊗ I_3
+  O2 = Op_2ferm((0,0,0))
+  O4 = Op_2ferm((1,0,0))
+  O5 = Op_2ferm((0,1,0))
+
+  res = di_meson_S_element(O1, O2, O1, O2) 
+  #res = di_meson_S_alt(O1, O2, O1, O2) 
+  #Alternative: #res = (np.trace(O1 @ O1) * np.trace(O2 @ O2)) + ((np.trace(O1 @ O2))**2) - 2.0* np.trace(O1 @ O1 @ O2 @ O2)
+  print ("<O1,O2|a,a> ", res)  # Agrees! 
+  res = di_meson_S_element(O4, O5, O1, O2) 
+  print ("<O4,O5|O1,O2>", res)  # Agrees!
+
+  O7tot = Op_2ferm((1,1,1))
+  O8tot = Op_2ferm((0,0,1))
+
+  for a in range(2, 9):
+
+    Oa = Op_2ferm((1,1,a))
+    Ob = Op_2ferm((0,0,a))
+    O7tot = np.add(O7tot,Oa)
+    O8tot = np.add(O8tot,Ob)
+
+
+  res = di_meson_S_element(O7tot, O8tot, O1, O2)
+  print ("<O7,O8|O1,O2>", res)  # Agrees!
+
+
+  O7tot = Op_2ferm((1,0,1))
+  O8tot = Op_2ferm((0,1,1))
+
+  for a in range(2, 9):
+
+    Oa = Op_2ferm((1,1,a))
+    Ob = Op_2ferm((0,0,a))
+    O7tot = np.add(O7tot,Oa)
+    O8tot = np.add(O8tot,Ob)
+
+
+  res = di_meson_S_element(O7tot, O8tot, O1, O2)
+  print ("<O7,O8|O1,O2>", res)  # Agrees!
+
+
+
+
+    
+
+  #print ("NNZ in TMP2", np.count_nonzero(tmp2))
+  #print ("Mat 2f", matprint(tmp2))
+  #tmp3 = Op_4ferm((1,0,0),(0,1,0))
+
+
+  '''
 
   #out_state1, norm_out_state1 = OP1(vac, 1.0) 
   #out_state2, norm_out_state2 = OP2(vac, 1.0)
   #out_state32, norm_out_state32 = OP3(O2state, O2norm)
   #out_state4, norm_out_state4 = OP4(vac, 1.0) 
   #out_state5, norm_out_state5 = OP5(vac, 1.0) # ISSUE HERE!
-
-
-  # Construct O_f like A_3 ⊗ \sigma_i ⊗ B_3
-
-  tmp0 = Op_2ferm((1,2,2))
-  tmp = Op_4ferm((1,2,2),(1,2,2))
-
-  print ("Mat 4f", matprint(tmp))
-
-
-
-
-  '''
   #out_state64, norm_out_state64 = OP6(O4state, O4norm) 
   
   for i in range (10): # Print first 10 states of each type for now. 
