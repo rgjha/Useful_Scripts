@@ -7,7 +7,7 @@ import collections
 import itertools 
 from sympy import LeviCivita
 from numpy.random import permutation
-from opt_einsum import contract
+#from opt_einsum import contract
 
 Nc = 3     # Color group 
 dimG = (Nc**2) - 1
@@ -451,49 +451,69 @@ if __name__ == "__main__":
   # Construct O_f like 
   O1 = Op_2ferm((1,1,0))  # T_1 ⊗ \sigma_1 ⊗ I_3
   O2 = Op_2ferm((0,0,0))
-  O4 = Op_2ferm((1,0,0))
-  O5 = Op_2ferm((0,1,0))
-
-  res = di_meson_S_element(O1, O2, O1, O2) 
-  #res = di_meson_S_alt(O1, O2, O1, O2) 
-  #Alternative: #res = (np.trace(O1 @ O1) * np.trace(O2 @ O2)) + ((np.trace(O1 @ O2))**2) - 2.0* np.trace(O1 @ O1 @ O2 @ O2)
-  print ("<O1,O2|a,a> ", res)  # Agrees! 
-  res = di_meson_S_element(O4, O5, O1, O2) 
-  print ("<O4,O5|O1,O2>", res)  # Agrees!
-
-  O7tot = Op_2ferm((1,1,1))
-  O8tot = Op_2ferm((0,0,1))
-
-  for a in range(2, 9):
-
-    Oa = Op_2ferm((1,1,a))
-    Ob = Op_2ferm((0,0,a))
-    O7tot = np.add(O7tot,Oa)
-    O8tot = np.add(O8tot,Ob)
+  O3 = Op_2ferm((1,0,0))
+  O4 = Op_2ferm((0,1,0))
 
 
-  res = di_meson_S_element(O7tot, O8tot, O1, O2)
-  print ("<O7,O8|O1,O2>", res)  # Agrees!
+  O5tot = np.zeros((18,18))
+  O6tot = np.zeros((18,18))
 
 
-  O7tot = Op_2ferm((1,0,1))
-  O8tot = Op_2ferm((0,1,1))
+  for a in range(1, 9):
 
-  for a in range(2, 9):
+    O5tot = np.add(O5tot,Op_2ferm((1,1,a)))
+    O6tot = np.add(O6tot,Op_2ferm((0,0,a)))
 
-    Oa = Op_2ferm((1,1,a))
-    Ob = Op_2ferm((0,0,a))
-    O7tot = np.add(O7tot,Oa)
-    O8tot = np.add(O8tot,Ob)
+  print ("<a,a|a,a> = ", di_meson_S_element(O1, O2, O1, O2))
+  print ("<b,b|a,a> = ", di_meson_S_element(O5tot, O6tot, O1, O2))
+  print ("<c,c|a,a> = ", di_meson_S_element(O3, O4, O1, O2))
+  print ("<b,b|b,b> = ", di_meson_S_element(O5tot, O6tot, O5tot, O6tot))
+  print ("<c,c|b,b> = ", di_meson_S_element(O3, O4, O3, O4))
+
+  
+  O7tot = np.zeros((18,18))
+  O8tot = np.zeros((18,18))
+
+  for a in range(1, 9):
+
+    O7tot = np.add(O7tot,Op_2ferm((1,0,a)))
+    O8tot = np.add(O8tot,Op_2ferm((0,1,a)))
 
 
-  res = di_meson_S_element(O7tot, O8tot, O1, O2)
-  print ("<O7,O8|O1,O2>", res)  # Agrees!
+  print ("<d,d|a,a> = ", di_meson_S_element(O7tot, O8tot, O1, O2))
+
+
+  O9tot = np.zeros((18,18))
+  O10tot = np.zeros((18,18))
+
+  for j in range (1,3):
+  	for k in range (1,3):
+
+  		if j != k:
+  			
+  			O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
+  			O10tot = np.add(O9tot, Op_2ferm((0,k+1,0)))
+
+  print ("<e,e|a,a> = ", di_meson_S_element(O9tot, O10tot, O1, O2))
+
+
+  O11tot = np.zeros((18,18))
+  O12tot = np.zeros((18,18))
+
+  for j in range (1,3):
+  	for k in range (1,3):
+
+  		if j != k:
+  			for a in range(1, 9):
+  				O11tot = np.add(O11tot, Op_2ferm((1,j+1,a)))
+  				O12tot = np.add(O12tot, Op_2ferm((0,k+1,a)))
+
+
+  print ("<f,f|a,a> = ", di_meson_S_element(O11tot, O12tot, O1, O2))
 
 
 
 
-    
 
   #print ("NNZ in TMP2", np.count_nonzero(tmp2))
   #print ("Mat 2f", matprint(tmp2))
