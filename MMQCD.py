@@ -509,6 +509,14 @@ if __name__ == "__main__":
         Smatrix[i][j] = di_meson_S_element(O9, O10, O1, O2)
       if i == 0 and j == 5 or i == 5 and j == 0:
         Smatrix[i][j] = di_meson_S_element(O11, O12, O1, O2)
+
+      if i == 1 and j == 2 or i == 2 and j == 1:
+        Smatrix[i][j] = di_meson_S_element(O3, O4, O5, O6)
+      if i == 1 and j == 3 or i == 3 and j == 1:
+        Smatrix[i][j] = di_meson_S_element(O7, O8, O5, O6)
+
+      if i == 2 and j == 3 or i == 3 and j == 2:
+        Smatrix[i][j] = di_meson_S_element(O3, O4, O5, O6)
       
 
   pretty_print_matrix(Smatrix.real)
