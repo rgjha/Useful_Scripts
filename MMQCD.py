@@ -431,12 +431,12 @@ def di_meson_S_alt(a,b,c,d):
 
   Id = np.eye(18) 
   n = 18 
-  t1 = contract('pk,ql->pkql', np.eye(n,n), np.eye(n,n))
+  t1 = np.einsum('pk,ql->pkql', np.eye(n,n), np.eye(n,n))
 
   #d1 = np.einsum('pm, qn, ik, jl ->ij', np.eye(4), s2)
-  tmp1 = np.subtract(contract('pk, ql->pkql', Id, Id), contract('pl, qk', Id, Id))
-  tmp2 = np.subtract(contract('im, jn', Id, Id), contract('mj, ni', Id, Id)) 
-  out = contract('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
+  tmp1 = np.subtract(np.einsum('pk, ql->pkql', Id, Id), np.einsum('pl, qk', Id, Id))
+  tmp2 = np.subtract(np.einsum('im, jn', Id, Id), np.einsum('mj, ni', Id, Id)) 
+  out = np.einsum('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
   # Alt: out = contract('pm, qn, ik, jl, pmqn, ikjl', a, b, c, d, tmp1, tmp2)
 
   return out
@@ -480,12 +480,10 @@ if __name__ == "__main__":
   O10tot = np.zeros((18,18))
 
   for j in range (1,3):
-  	for k in range (1,3):
-
-  		if j != k and j == 1:
-  			O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
-  			O10tot = np.add(O10tot, Op_2ferm((0,k+1,0)))
-
+    for k in range (1,3):
+      if j != k and j == 1:
+        O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
+        O10tot = np.add(O10tot, Op_2ferm((0,k+1,0)))
       if j != k and j == 2:
         O9tot = np.add(O9tot, -1.0*Op_2ferm((1,j+1,0)))
         O10tot = np.add(O10tot, -1.0*Op_2ferm((0,k+1,0)))
@@ -508,6 +506,7 @@ if __name__ == "__main__":
 
       if i == j == 0:
         Smatrix[i][j] = di_meson_S_element(O1, O2, O1, O2)
+        #Smatrix[i][j] = di_meson_S_alt(O1, O2, O1, O2) # Doesn't work & is slow
       if i == 0 and j == 1 or i == 1 and j == 0:
         Smatrix[i][j] = di_meson_S_element(O5tot, O6tot, O1, O2)
       if i == 0 and j == 2 or i == 2 and j == 0:
