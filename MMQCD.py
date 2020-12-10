@@ -464,12 +464,6 @@ if __name__ == "__main__":
     O5tot = np.add(O5tot,Op_2ferm((1,1,a)))
     O6tot = np.add(O6tot,Op_2ferm((0,0,a)))
 
-  print ("<a,a|a,a> = ", di_meson_S_element(O1, O2, O1, O2))
-  print ("<b,b|a,a> = ", di_meson_S_element(O5tot, O6tot, O1, O2))
-  print ("<c,c|a,a> = ", di_meson_S_element(O3, O4, O1, O2))
-  print ("<b,b|b,b> = ", di_meson_S_element(O5tot, O6tot, O5tot, O6tot))
-  print ("<c,c|b,b> = ", di_meson_S_element(O3, O4, O3, O4))
-
   
   O7tot = np.zeros((18,18))
   O8tot = np.zeros((18,18))
@@ -480,21 +474,24 @@ if __name__ == "__main__":
     O8tot = np.add(O8tot,Op_2ferm((0,1,a)))
 
 
-  print ("<d,d|a,a> = ", di_meson_S_element(O7tot, O8tot, O1, O2))
-
 
   O9tot = np.zeros((18,18))
   O10tot = np.zeros((18,18))
 
+
   for j in range (1,3):
-  	for k in range (1,3):
+    for k in range (1,3):
 
-  		if j != k:
-  			
-  			O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
-  			O10tot = np.add(O9tot, Op_2ferm((0,k+1,0)))
+      # 123 -> 012 
+      if j != k and j == 1:  
+        print (j, k, "+") 
+        O9tot = np.add(O9tot, Op_2ferm((1,j+1,0))) 
+        O10tot = np.add(O10tot, Op_2ferm((0,k+1,0)))
 
-  print ("<e,e|a,a> = ", di_meson_S_element(O9tot, O10tot, O1, O2))
+      if j != k and j == 2:
+        print (j, k, "-") 
+        O9tot = np.add(O9tot, -1.0*Op_2ferm((1,j+1,0)))
+        O10tot = np.add(O10tot, -1.0*Op_2ferm((0,k+1,0)))
 
 
   O11tot = np.zeros((18,18))
@@ -509,7 +506,19 @@ if __name__ == "__main__":
   				O12tot = np.add(O12tot, Op_2ferm((0,k+1,a)))
 
 
+
+  print ("<a,a|a,a> = ", di_meson_S_element(O1, O2, O1, O2))
+  print ("<b,b|a,a> = ", di_meson_S_element(O5tot, O6tot, O1, O2))
+  print ("<c,c|a,a> = ", di_meson_S_element(O3, O4, O1, O2))
+  print ("<d,d|a,a> = ", di_meson_S_element(O7tot, O8tot, O1, O2))
+  print ("<e,e|a,a> = ", di_meson_S_element(O9tot, O10tot, O1, O2))
   print ("<f,f|a,a> = ", di_meson_S_element(O11tot, O12tot, O1, O2))
+
+  print ("<b,b|b,b> = ", di_meson_S_element(O5tot, O6tot, O5tot, O6tot)) # Off by factor of 6
+  print ("<c,c|c,c> = ", di_meson_S_element(O3, O4, O3, O4))
+  print ("<d,d|d,d> = ", di_meson_S_element(O7tot, O8tot, O7tot, O8tot)) # Off by factor of 6
+  print ("<e,e|e,e> = ", di_meson_S_element(O10tot, O9tot, O10tot, O9tot)) # Off
+  print ("<f,f|f,f> = ", di_meson_S_element(O11tot, O12tot, O11tot, O12tot)) # Off
 
 
 
