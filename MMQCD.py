@@ -437,6 +437,7 @@ def di_meson_S_alt(a,b,c,d):
   tmp1 = np.subtract(contract('pk, ql->pkql', Id, Id), contract('pl, qk', Id, Id))
   tmp2 = np.subtract(contract('im, jn', Id, Id), contract('mj, ni', Id, Id)) 
   out = contract('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
+  # Alt: out = contract('pm, qn, ik, jl, pmqn, ikjl', a, b, c, d, tmp1, tmp2)
 
   return out
 
@@ -481,10 +482,13 @@ if __name__ == "__main__":
   for j in range (1,3):
   	for k in range (1,3):
 
-  		if j != k:
-  			
+  		if j != k and j == 1:
   			O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
-  			O10tot = np.add(O9tot, Op_2ferm((0,k+1,0)))
+  			O10tot = np.add(O10tot, Op_2ferm((0,k+1,0)))
+
+      if j != k and j == 2:
+        O9tot = np.add(O9tot, -1.0*Op_2ferm((1,j+1,0)))
+        O10tot = np.add(O10tot, -1.0*Op_2ferm((0,k+1,0)))
 
 
   O11tot = np.zeros((18,18))
