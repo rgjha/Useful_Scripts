@@ -32,6 +32,7 @@ O6totalnorm = np.zeros((n_h))
 vac = np.zeros((3, dimG)) # Vacuum state
 Lambda = np.zeros((dimG+1,3,3),dtype=complex) # Gell-Mann matrices 
 Sigma = np.zeros((4,2,2),dtype=complex) # Pauli matrices 
+Smatrix = np.zeros((6,6),dtype=complex)
 
 
 def list_even(a,b,c):
@@ -474,24 +475,16 @@ if __name__ == "__main__":
     O8tot = np.add(O8tot,Op_2ferm((0,1,a)))
 
 
-
   O9tot = np.zeros((18,18))
   O10tot = np.zeros((18,18))
 
-
   for j in range (1,3):
-    for k in range (1,3):
+  	for k in range (1,3):
 
-      # 123 -> 012 
-      if j != k and j == 1:  
-        print (j, k, "+") 
-        O9tot = np.add(O9tot, Op_2ferm((1,j+1,0))) 
-        O10tot = np.add(O10tot, Op_2ferm((0,k+1,0)))
-
-      if j != k and j == 2:
-        print (j, k, "-") 
-        O9tot = np.add(O9tot, -1.0*Op_2ferm((1,j+1,0)))
-        O10tot = np.add(O10tot, -1.0*Op_2ferm((0,k+1,0)))
+  		if j != k:
+  			
+  			O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
+  			O10tot = np.add(O9tot, Op_2ferm((0,k+1,0)))
 
 
   O11tot = np.zeros((18,18))
@@ -506,19 +499,28 @@ if __name__ == "__main__":
   				O12tot = np.add(O12tot, Op_2ferm((0,k+1,a)))
 
 
+  for i in range (6):
+    for j in range (6):
 
-  print ("<a,a|a,a> = ", di_meson_S_element(O1, O2, O1, O2))
-  print ("<b,b|a,a> = ", di_meson_S_element(O5tot, O6tot, O1, O2))
-  print ("<c,c|a,a> = ", di_meson_S_element(O3, O4, O1, O2))
-  print ("<d,d|a,a> = ", di_meson_S_element(O7tot, O8tot, O1, O2))
-  print ("<e,e|a,a> = ", di_meson_S_element(O9tot, O10tot, O1, O2))
-  print ("<f,f|a,a> = ", di_meson_S_element(O11tot, O12tot, O1, O2))
+      if i == j == 0:
+        Smatrix[i][j] = di_meson_S_element(O1, O2, O1, O2)
+      if i == 0 and j == 1 or i == 1 and j == 0:
+        Smatrix[i][j] = di_meson_S_element(O5tot, O6tot, O1, O2)
+      if i == 0 and j == 2 or i == 2 and j == 0:
+        Smatrix[i][j] = di_meson_S_element(O3, O4, O1, O2)
+      if i == j == 1:
+        Smatrix[i][j] = di_meson_S_element(O5tot, O6tot, O5tot, O6tot)
+      if i == 2 and j == 1 or i == 1 and j == 2:
+        Smatrix[i][j] = di_meson_S_element(O3, O4, O3, O4)
+      if i == 3 and j == 0 or i == 0 and j == 3:
+        Smatrix[i][j] = di_meson_S_element(O7tot, O8tot, O1, O2)
+      if i == 4 and j == 0 or i == 0 and j == 4:
+        Smatrix[i][j] = di_meson_S_element(O9tot, O10tot, O1, O2)
+      if i == 5 and j == 0 or i == 0 and j == 5:
+        Smatrix[i][j] = di_meson_S_element(O11tot, O12tot, O1, O2)
 
-  print ("<b,b|b,b> = ", di_meson_S_element(O5tot, O6tot, O5tot, O6tot)) # Off by factor of 6
-  print ("<c,c|c,c> = ", di_meson_S_element(O3, O4, O3, O4))
-  print ("<d,d|d,d> = ", di_meson_S_element(O7tot, O8tot, O7tot, O8tot)) # Off by factor of 6
-  print ("<e,e|e,e> = ", di_meson_S_element(O10tot, O9tot, O10tot, O9tot)) # Off
-  print ("<f,f|f,f> = ", di_meson_S_element(O11tot, O12tot, O11tot, O12tot)) # Off
+
+  pretty_print_matrix(Smatrix.real)
 
 
 
