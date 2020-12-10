@@ -411,46 +411,19 @@ def vev(s1,s2):
 
 def di_meson_S_element(P1,P2,O1,O2):
 
-  out = 0.0
-  out = np.trace(P1 @ O1) * np.trace(P2 @ O2)
-  out +=  np.trace(P1 @ O2) * np.trace(P2 @ O1)
-  out -= np.trace(P1 @ O1 @ P2 @ O2)
-  out -= np.trace(P1 @ O2 @ P2 @ O1)
-
-  return out 
-
-
-def di_meson_S_alt(a,b,c,d):
-
-  '''
-  Eps = np.zeros((3,3,3))
-
-  for a in range (3):
-    for b in range (3):
-      for c in range (3):
-
-        Eps[a][b][c] = LeviCivita(a, b, c)
-  '''
+  #out = np.trace(P1 @ O1) * np.trace(P2 @ O2)
+  #out +=  np.trace(P1 @ O2) * np.trace(P2 @ O1)
+  #out -= np.trace(P1 @ O1 @ P2 @ O2)
+  #out -= np.trace(P1 @ O2 @ P2 @ O1)
 
   Id = np.eye(18)  
-  #t1 = np.einsum('pk,ql->pkql', Id, Id)
   t1 = ncon((Id, Id),([-1,-2],[-3,-4]))
-
-  #d1 = np.einsum('pm, qn, ik, jl ->ij', np.eye(4), s2)
-  tmp1 = np.subtract(t1, t1.transpose(0,3,1,2))
-  tmp2 = np.subtract(t1, t1.transpose(0,3,1,2)) 
-  print (LA.norm(tmp1))
-  print (LA.norm(tmp2))
+  tmp1 = np.subtract(t1, t1.transpose(0,3,2,1))
+  tmp2 = np.subtract(t1, t1.transpose(1,2,3,0)) 
   #out = np.einsum('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
-  # Alt: out = contract('pm, qn, ik, jl, pmqn, ikjl', a, b, c, d, tmp1, tmp2)
+  out = ncon((P1,P2,O1,O2,tmp1,tmp2),([1,2],[3,4],[5,6],[7,8],[1,6,3,8],[5,2,7,4]))
 
-  #out = ncon((a,b,c,d,tmp1,tmp2),([1,2],[3,4],[5,6],[7,8],[1,2,3,4],[5,6,7,8]))
-  out = ncon((a,b,c,d,tmp1,tmp2),([1,2],[3,4],[5,6],[7,8],[1,6,3,8],[5,2,7,4]))
-
-
-  return out
-
-
+  return out 
 
 
 if __name__ == "__main__":
@@ -466,76 +439,79 @@ if __name__ == "__main__":
   O4 = Op_2ferm((0,1,0))
 
 
-  O5tot = np.zeros((18,18))
-  O6tot = np.zeros((18,18))
+  O5 = np.zeros((18,18))
+  O6 = np.zeros((18,18))
 
 
   for a in range(1, 9):
 
-    O5tot = np.add(O5tot,Op_2ferm((1,1,a)))
-    O6tot = np.add(O6tot,Op_2ferm((0,0,a)))
+    O5 = np.add(O5,Op_2ferm((1,1,a)))
+    O6 = np.add(O6,Op_2ferm((0,0,a)))
 
   
-  O7tot = np.zeros((18,18))
-  O8tot = np.zeros((18,18))
+  O7 = np.zeros((18,18))
+  O8 = np.zeros((18,18))
 
   for a in range(1, 9):
 
-    O7tot = np.add(O7tot,Op_2ferm((1,0,a)))
-    O8tot = np.add(O8tot,Op_2ferm((0,1,a)))
+    O7 = np.add(O7,Op_2ferm((1,0,a)))
+    O8 = np.add(O8,Op_2ferm((0,1,a)))
 
 
-  O9tot = np.zeros((18,18))
-  O10tot = np.zeros((18,18))
+  O9 = np.zeros((18,18))
+  O10 = np.zeros((18,18))
 
   for j in range (1,3):
     for k in range (1,3):
       if j != k and j == 1:
-        O9tot = np.add(O9tot, Op_2ferm((1,j+1,0)))
-        O10tot = np.add(O10tot, Op_2ferm((0,k+1,0)))
+        O9 = np.add(O9, Op_2ferm((1,j+1,0)))
+        O10 = np.add(O10, Op_2ferm((0,k+1,0)))
       if j != k and j == 2:
-        O9tot = np.add(O9tot, -1.0*Op_2ferm((1,j+1,0)))
-        O10tot = np.add(O10tot, -1.0*Op_2ferm((0,k+1,0)))
+        O9 = np.add(O9, -1.0*Op_2ferm((1,j+1,0)))
+        O10 = np.add(O10, -1.0*Op_2ferm((0,k+1,0)))
 
 
-  O11tot = np.zeros((18,18))
-  O12tot = np.zeros((18,18))
+  O11 = np.zeros((18,18))
+  O12 = np.zeros((18,18))
 
   for j in range (1,3):
   	for k in range (1,3):
 
   		if j != k:
   			for a in range(1, 9):
-  				O11tot = np.add(O11tot, Op_2ferm((1,j+1,a)))
-  				O12tot = np.add(O12tot, Op_2ferm((0,k+1,a)))
+  				O11 = np.add(O11, Op_2ferm((1,j+1,a)))
+  				O12 = np.add(O12, Op_2ferm((0,k+1,a)))
 
 
   for i in range (6):
     for j in range (6):
 
       if i == j == 0:
-        Smatrix[i][j] = di_meson_S_element(O1, O2, O1, O2)
-        #Smatrix[i][j] = di_meson_S_alt(O1, O2, O1, O2) # Works!?
+        Smatrix[i][j] = di_meson_S_element(O1, O2, O1, O2) 
+      if i == j == 1:
+        Smatrix[i][j] = di_meson_S_element(O5, O6, O5, O6)
+      if i == j == 2:
+        Smatrix[i][j] = di_meson_S_element(O3, O4, O3, O4)
+      if i == j == 3:
+        Smatrix[i][j] = di_meson_S_element(O7, O8, O7, O8)
+      if i == j == 4:
+        Smatrix[i][j] = di_meson_S_element(O9, O10, O9, O10)
+      if i == j == 5:
+        Smatrix[i][j] = di_meson_S_element(O11, O12, O11, O12)
+
       if i == 0 and j == 1 or i == 1 and j == 0:
-        Smatrix[i][j] = di_meson_S_element(O5tot, O6tot, O1, O2)
+        Smatrix[i][j] = di_meson_S_element(O5, O6, O1, O2)
       if i == 0 and j == 2 or i == 2 and j == 0:
         Smatrix[i][j] = di_meson_S_element(O3, O4, O1, O2)
-      if i == j == 1:
-        Smatrix[i][j] = di_meson_S_element(O5tot, O6tot, O5tot, O6tot)
-      if i == 2 and j == 1 or i == 1 and j == 2:
-        Smatrix[i][j] = di_meson_S_element(O3, O4, O3, O4)
-      if i == 3 and j == 0 or i == 0 and j == 3:
-        Smatrix[i][j] = di_meson_S_element(O7tot, O8tot, O1, O2)
-      if i == 4 and j == 0 or i == 0 and j == 4:
-        Smatrix[i][j] = di_meson_S_element(O9tot, O10tot, O1, O2)
-      if i == 5 and j == 0 or i == 0 and j == 5:
-        Smatrix[i][j] = di_meson_S_element(O11tot, O12tot, O1, O2)
-
+      if i == 0 and j == 3 or i == 3 and j == 0:
+        Smatrix[i][j] = di_meson_S_element(O7, O8, O1, O2)
+      if i == 0 and j == 4 or i == 4 and j == 0:
+        Smatrix[i][j] = di_meson_S_element(O9, O10, O1, O2)
+      if i == 0 and j == 5 or i == 5 and j == 0:
+        Smatrix[i][j] = di_meson_S_element(O11, O12, O1, O2)
+      
 
   pretty_print_matrix(Smatrix.real)
-
-
-
 
 
   #print ("NNZ in TMP2", np.count_nonzero(tmp2))
