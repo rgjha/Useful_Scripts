@@ -5,9 +5,12 @@ import numpy as np
 import sys
 import collections
 import itertools 
+from numpy import linalg as LA
 from sympy import LeviCivita
 from numpy.random import permutation
 #from opt_einsum import contract
+from ncon import ncon 
+
 
 Nc = 3     # Color group 
 dimG = (Nc**2) - 1
@@ -429,15 +432,21 @@ def di_meson_S_alt(a,b,c,d):
         Eps[a][b][c] = LeviCivita(a, b, c)
   '''
 
-  Id = np.eye(18) 
-  n = 18 
-  t1 = np.einsum('pk,ql->pkql', np.eye(n,n), np.eye(n,n))
+  Id = np.eye(18)  
+  #t1 = np.einsum('pk,ql->pkql', Id, Id)
+  t1 = ncon((Id, Id),([-1,-2],[-3,-4]))
 
   #d1 = np.einsum('pm, qn, ik, jl ->ij', np.eye(4), s2)
-  tmp1 = np.subtract(np.einsum('pk, ql->pkql', Id, Id), np.einsum('pl, qk', Id, Id))
-  tmp2 = np.subtract(np.einsum('im, jn', Id, Id), np.einsum('mj, ni', Id, Id)) 
-  out = np.einsum('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
+  tmp1 = np.subtract(t1, t1.transpose(0,3,1,2))
+  tmp2 = np.subtract(t1, t1.transpose(0,3,1,2)) 
+  print (LA.norm(tmp1))
+  print (LA.norm(tmp2))
+  #out = np.einsum('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
   # Alt: out = contract('pm, qn, ik, jl, pmqn, ikjl', a, b, c, d, tmp1, tmp2)
+
+  #out = ncon((a,b,c,d,tmp1,tmp2),([1,2],[3,4],[5,6],[7,8],[1,2,3,4],[5,6,7,8]))
+  out = ncon((a,b,c,d,tmp1,tmp2),([1,2],[3,4],[5,6],[7,8],[1,6,3,8],[5,2,7,4]))
+
 
   return out
 
@@ -506,7 +515,7 @@ if __name__ == "__main__":
 
       if i == j == 0:
         Smatrix[i][j] = di_meson_S_element(O1, O2, O1, O2)
-        #Smatrix[i][j] = di_meson_S_alt(O1, O2, O1, O2) # Doesn't work & is slow
+        #Smatrix[i][j] = di_meson_S_alt(O1, O2, O1, O2) # Works!?
       if i == 0 and j == 1 or i == 1 and j == 0:
         Smatrix[i][j] = di_meson_S_element(O5tot, O6tot, O1, O2)
       if i == 0 and j == 2 or i == 2 and j == 0:
