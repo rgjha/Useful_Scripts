@@ -3,6 +3,8 @@
 
 import numpy as np
 import sys
+import time
+import datetime
 import collections
 import itertools 
 from numpy import linalg as LA
@@ -10,6 +12,8 @@ from sympy import LeviCivita
 from numpy.random import permutation
 #from opt_einsum import contract
 from ncon import ncon 
+
+print ("STARTED:" , datetime.datetime.now().strftime("%d %B %Y %H:%M:%S"))
 
 
 Nc = 3     # Color group 
@@ -420,7 +424,7 @@ def di_meson_S_element(P1,P2,O1,O2):
   t1 = ncon((Id, Id),([-1,-2],[-3,-4]))
   tmp1 = np.subtract(t1, t1.transpose(0,3,2,1))
   tmp2 = np.subtract(t1, t1.transpose(1,2,3,0)) 
-  #out = np.einsum('pm, qn, ik, jl, pkql, imjn', a, b, c, d, tmp1, tmp2)
+  #out = np.einsum('ab, cd, ef, gh, afch, ebgd', P1, P2, O1, O2, tmp1, tmp2)
   out = ncon((P1,P2,O1,O2,tmp1,tmp2),([1,2],[3,4],[5,6],[7,8],[1,6,3,8],[5,2,7,4]))
 
   return out 
@@ -439,14 +443,16 @@ if __name__ == "__main__":
   O4 = Op_2ferm((0,1,0))
 
 
+  
+
+  #'''
   O5 = np.zeros((18,18))
   O6 = np.zeros((18,18))
-
-
   for a in range(1, 9):
 
     O5 = np.add(O5,Op_2ferm((1,1,a)))
     O6 = np.add(O6,Op_2ferm((0,0,a)))
+  #'''
 
   
   O7 = np.zeros((18,18))
@@ -488,8 +494,17 @@ if __name__ == "__main__":
 
       if i == j == 0:
         Smatrix[i][j] = di_meson_S_element(O1, O2, O1, O2) 
+
       if i == j == 1:
-        Smatrix[i][j] = di_meson_S_element(O5, O6, O5, O6)
+
+        for a in range(1, 9):
+
+          O5 = Op_2ferm((1,1,a))
+          O6 = Op_2ferm((0,0,a))
+          Smatrix[i][j] = di_meson_S_element(O5, O6, O5, O6)
+
+      #'''
+      
       if i == j == 2:
         Smatrix[i][j] = di_meson_S_element(O3, O4, O3, O4)
       if i == j == 3:
@@ -517,9 +532,15 @@ if __name__ == "__main__":
 
       if i == 2 and j == 3 or i == 3 and j == 2:
         Smatrix[i][j] = di_meson_S_element(O3, O4, O5, O6)
-      
 
-  pretty_print_matrix(Smatrix.real)
+
+
+      
+      #'''
+
+  pretty_print_matrix(Smatrix.real,4)
+  print ("Mathematica gives")
+  print ("192 853.33 192 853.33 432 1536  .. -128 -128 -128 0  0 .. -24 -85.33 0 0 .. -128 0 0 .. 0 0 .. 0")
 
 
   #print ("NNZ in TMP2", np.count_nonzero(tmp2))
@@ -550,7 +571,7 @@ if __name__ == "__main__":
     # i=1, j=2 f_123 * f_123
   '''
 
-
+print ("FINISHED:" , datetime.datetime.now().strftime("%d %B %Y %H:%M:%S"))
 
 
 
