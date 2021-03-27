@@ -31,3 +31,43 @@ set arrow from 0.1,-0.005 to 0.1,0.01 filled back lw 3  dt 2 lc rgb 'forest-gree
 plot  "beta0p42" u 1:2  ls 1  t '$\beta=0.42$' axes x1y1 w lp, "beta0p43" u 1:2  ls 2  t '$\beta=0.43$' axes x1y1 w lp, "beta0p44" u 1:2  ls 3  t '$\beta=0.44$' axes x1y1 w lp, "beta0p45" u 1:2  ls 5  t '$\beta=0.45$' axes x1y1 w lp, "beta0p46" u 1:2  ls 6  t '$\beta=0.46$' axes x1y1 w lp
 \end{gnuplot}
 \end{document}
+
+# Both left and right side plots. 
+
+\documentclass{standalone}
+\usepackage{gnuplottex}
+\begin{document}
+\begin{gnuplot}[terminal=epslatex,terminaloptions=color]
+set style line 1 lc rgb 'brown'  lt 1 lw 2 pt 6 ps 1.1
+set style line 2  lc rgb '#0055bd' lt 1 lw 2 pt 11 ps 1.8
+set style line 3 lc rgb 'navyblue'  lt 1 lw 2 pt 6 ps 1.5 
+set style line 4 lc rgb 'forest-green'  lt 1 lw 2 pt 11 ps 1.7
+set style line 5  lc rgb 'black'  lt 1 lw 2 pt 6 ps 1.9  
+set style line 6 lc rgb '#d95319'  lt 1 lw 2 pt 11 ps 1.9
+set style line 8 lc rgb '#0072bd' lt 1 lw 2 pt 8 ps 1.6
+set style line 9 lc rgb 'navyblue'  lt 1 lw 2 pt 4 ps 1.5
+set style line 10 lc rgb '#1100ced1'  lt 1 lw 2 pt 11 ps 1.4
+set style line 11 lc rgb '#d95319'  lt 1 lw 2 pt 11 ps 1.4
+
+set lmargin 1.9
+set ylabel "$\\langle S \\rangle =  \\frac{1}{V} \\frac{\\partial \\rm{ln} Z}{\\partial \\beta}$" font ',10' offset 0.1
+set xlabel "$\\beta$"  
+set y2label "$\\langle \\rm{C_{v}} \\rangle =  \\frac{\\beta^{2}}{V} \\frac{\\partial^2\\rm{ln} Z}{\\partial \\beta^{2}}$" font ',10' offset 0.1
+set rmargin 6.7
+set yrange [0.5:2.]
+set xrange [0.3:0.6]
+set key top left
+set mxtics 5
+set mytics 4
+set y2tics
+set y2range [0:3.2]
+set arrow from 0.45417, graph 0 to 0.45417, graph 1 filled back lw 3  dt 4 lc rgb "black" nohead 
+
+plot "output_num_dif_D62_0" u 1:2  ls 1  t '' axes x1y1 w linespoints, "output_num_dif_D62_0" u 1:3 ls 4  t '' axes x1y2 w linespoints, \
+"output_num_dif_D62_2" u 1:2  ls 3  t '' axes x1y1 w linespoints, "output_num_dif_D62_2" u 1:3 ls 2  t '' axes x1y2 w linespoints, \
+\end{gnuplot}
+% t '$\langle \rm{S} \rangle$'
+% t '$\langle \rm{C_{v}} \rangle$'
+\end{document}
+
+
