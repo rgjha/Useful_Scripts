@@ -1,0 +1,33 @@
+\documentclass{standalone}
+\usepackage{gnuplottex}
+\begin{document}
+\begin{gnuplot}[terminal=epslatex,terminaloptions=color]
+
+set style line 1 lc rgb '#0072bd' lt 1 lw 2 pt 8 ps 1.6
+set style line 2 lc rgb 'brown'  lt 1 lw 2 pt 6 ps 1.5
+set style line 3 lc rgb 'navyblue'  lt 1 lw 2 pt 4 ps 1.4
+set style line 4 lc rgb '#d95319'  lt 1 lw 2 pt 7 ps 1.4
+set style line 5 lc rgb 'forest-green'  lt 1 lw 2 pt 2 ps 1.4
+set style line 6 lc rgb '#e95319'  lt 1 lw 2 pt 7 ps 1.6
+set style line 7 lc rgb 'light-red'  lt 1 lw 2 pt 11 ps 1.4
+set style line 8 lc rgb '#0055bd' lt 1 lw 2 pt 3 ps 1.5  
+
+set lmargin 2.1
+set ylabel "$\\langle \\rho \\rangle =  \\frac{1}{V} \\frac{\\partial \\rm{ln} Z}{\\partial \\mu}$" font ',10' offset 0.1
+set title "$64^{3}, N_{i}=20, D=50$"
+set xlabel "$\\mu$"  
+set rmargin 5.6
+set yrange [-0.005:0.12]
+set xrange [0.0:0.65]
+set key top left
+set mxtics 5
+set mytics 5
+
+set arrow from 0.38,-0.005 to 0.38,0.01 filled back lw 3  dt 2 lc rgb '#0072bd' nohead 
+set arrow from 0.3,-0.005 to 0.3,0.01 filled back lw 3  dt 2 lc rgb 'brown' nohead 
+set arrow from 0.198,-0.005 to 0.198,0.01 filled back lw 3  dt 2 lc rgb 'navyblue'  nohead 
+set arrow from 0.1,-0.005 to 0.1,0.01 filled back lw 3  dt 2 lc rgb 'forest-green'  nohead 
+
+plot  "beta0p42" u 1:2  ls 1  t '$\beta=0.42$' axes x1y1 w lp, "beta0p43" u 1:2  ls 2  t '$\beta=0.43$' axes x1y1 w lp, "beta0p44" u 1:2  ls 3  t '$\beta=0.44$' axes x1y1 w lp, "beta0p45" u 1:2  ls 5  t '$\beta=0.45$' axes x1y1 w lp, "beta0p46" u 1:2  ls 6  t '$\beta=0.46$' axes x1y1 w lp
+\end{gnuplot}
+\end{document}
