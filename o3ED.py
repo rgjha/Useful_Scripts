@@ -1,3 +1,6 @@
+# Work in progress. 
+# November 2022
+
 import numpy as np
 import math
 import sys
@@ -9,8 +12,9 @@ init_printing()
 
 N=4 
 SQRT2 = 1.4142135623730951
-dim=8
-padup=int(dim-2)
+dimH=6
+padup=int(dimH-2)
+size=2**N
 
 if len(sys.argv) < 3:
   print("Usage: python", str(sys.argv[0]), "l-max selected " "beta=1/g^2")
@@ -40,10 +44,10 @@ if lmax == 1.5:
    sigmax = np.pad(sigmax, (0,padup), 'constant', constant_values=(0)) 
    I2 = np.identity(dimH)
    I4 = np.identity(dimH**2)
-   nplus = np.kron(np.kron(nplus, nplus), nplus) 
-   nminus = np.kron(np.kron(nminus, nminus), nminus) 
-   #nplus = np.pad(nplus, (0,padup), 'constant', constant_values=(0)) 
-   #nminus = np.pad(nminus, (0,padup), 'constant', constant_values=(0)) 
+   #nplus = np.kron(np.kron(nplus, nplus), nplus) 
+   #nminus = np.kron(np.kron(nminus, nminus), nminus) 
+   nplus = np.pad(nplus, (0,padup), 'constant', constant_values=(0)) 
+   nminus = np.pad(nminus, (0,padup), 'constant', constant_values=(0)) 
 
 
 HH = (N*(3./8.)*(1/beta)*Ikin) + \
@@ -59,9 +63,9 @@ beta*(np.kron(np.kron(nminus, I4),nplus) + np.kron(np.kron(nplus, I4),nminus) + 
 #with np.printoptions(precision=10, suppress=True, formatter={'float': '{:0.2f}'.format}, linewidth=100):
 #    print(HH)
 
-print (np.shape(HH1))
-w, v = eig(HH1)
-print ("ground state energy", np.min(w)/N)
+print ("Size of the Hamiltonian", np.shape(HH))
+w, v = eig(HH)
+print ("Ground state energy from ED of Pauli Hamiltonian", np.min(w.real)/N)
 
 
 # Now think about H in terms of creation/annihilation operators(qumodes-H)
@@ -76,4 +80,4 @@ for i in range (0, size):
 
 HH = (1/2)*(1/beta)*(0.25*number_operator*(0.25*number_operator+1))
 w, v = eig(HH)
-print ("ground state energy", np.min(w))
+print ("Ground state energy using qumodes H (kinetic piece)", np.min(w))
