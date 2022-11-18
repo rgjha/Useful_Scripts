@@ -9,8 +9,8 @@ init_printing()
 
 N=4 
 SQRT2 = 1.4142135623730951
-dimH=8
-padup=int(dimH-2)
+dim=8
+padup=int(dim-2)
 
 if len(sys.argv) < 3:
   print("Usage: python", str(sys.argv[0]), "l-max selected " "beta=1/g^2")
