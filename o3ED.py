@@ -62,3 +62,18 @@ beta*(np.kron(np.kron(nminus, I4),nplus) + np.kron(np.kron(nplus, I4),nminus) + 
 print (np.shape(HH1))
 w, v = eig(HH1)
 print ("ground state energy", np.min(w)/N)
+
+
+# Now think about H in terms of creation/annihilation operators(qumodes-H)
+# Ideally, the ground state energy should match with both qubit-H
+# and qumodes-H. We will try this! 
+
+# First try the kinetic term. 
+number_operator = np.zeros((size, size), int)
+
+for i in range (0, size):
+   number_operator[i][i] = (i+1)*2.
+
+HH = (1/2)*(1/beta)*(0.25*number_operator*(0.25*number_operator+1))
+w, v = eig(HH)
+print ("ground state energy", np.min(w))
