@@ -10,6 +10,16 @@ from numpy.linalg import svd
 from sympy import Matrix, init_printing
 init_printing()
 
+
+from sympy import Symbol, Integer
+from sympy.physics.quantum import (Dagger, qapply,represent,InnerProduct,Commutator)
+from sympy.physics.quantum.sho1d import (RaisingOp, LoweringOp,NumberOp,Hamiltonian,SHOKet,SHOBra)
+ad = RaisingOp('a')
+a = LoweringOp('a')
+NOP = NumberOp('N')
+H = Hamiltonian('H')
+
+
 N=4 
 SQRT2 = 1.4142135623730951
 dimH=6
@@ -39,15 +49,19 @@ if lmax == 0.5:
 if lmax == 1.5:
 
    Ikin = np.identity(dimH**4)
-   sigmaz = np.pad(sigmaz, (0,padup), 'constant', constant_values=(0)) 
-   isigmay = np.pad(isigmay, (0,padup), 'constant', constant_values=(0)) 
-   sigmax = np.pad(sigmax, (0,padup), 'constant', constant_values=(0)) 
+   #sigmaz = np.pad(sigmaz, (0,padup), 'constant', constant_values=(0)) 
+   #isigmay = np.pad(isigmay, (0,padup), 'constant', constant_values=(0)) 
+   #sigmax = np.pad(sigmax, (0,padup), 'constant', constant_values=(0)) 
    I2 = np.identity(dimH)
    I4 = np.identity(dimH**2)
    #nplus = np.kron(np.kron(nplus, nplus), nplus) 
    #nminus = np.kron(np.kron(nminus, nminus), nminus) 
-   nplus = np.pad(nplus, (0,padup), 'constant', constant_values=(0)) 
-   nminus = np.pad(nminus, (0,padup), 'constant', constant_values=(0)) 
+   #nplus = np.pad(nplus, (0,padup), 'constant', constant_values=(0)) 
+   #nminus = np.pad(nminus, (0,padup), 'constant', constant_values=(0)) 
+   # Oops!
+   nplus =  np.array([[0, 0, 0, 0, 0, 0],[-SQRT2/3., 0, 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, -SQRT2/(np.sqrt(3)*5.), 0, 0, 0], [0, 0, 0, -SQRT2*2/15., 0, 0],[0, 0, 0, 0, -SQRT2/(np.sqrt(3)*5.), 0]])
+   nminus = np.array([[0, -SQRT2/3., 0, 0, 0, 0],[0, 0, 0, 0, 0, 0],[0, 0, 0, -SQRT2/(np.sqrt(3)*5.), 0, 0],[0, 0, 0, 0, -SQRT2*2/15., 0], [0, 0, 0, 0, 0, -SQRT2/(np.sqrt(3)*5.)],[0, 0, 0, 0, 0, 0]])
+   sigmaz = np.array([[1, 0, 0, 0, 0, 0],[0, -1, 0, 0, 0, 0],[0, 0, 0.6, 0, 0, 0],[0, 0, 0, 0.2, 0, 0], [0, 0, 0, 0, -0.2, 0],[0, 0, 0, 0, 0, -0.6]])
 
 
 HH = (N*(3./8.)*(1/beta)*Ikin) + \
@@ -67,6 +81,7 @@ print ("Size of the Hamiltonian", np.shape(HH))
 w, v = eig(HH)
 print ("Ground state energy from ED of Pauli Hamiltonian", np.min(w.real)/N)
 
+sys.exit(1) 
 
 # Now think about H in terms of creation/annihilation operators(qumodes-H)
 # Ideally, the ground state energy should match with both qubit-H
@@ -78,6 +93,27 @@ number_operator = np.zeros((size, size), int)
 for i in range (0, size):
    number_operator[i][i] = (i+1)*2.
 
-HH = (1/2)*(1/beta)*(0.25*number_operator*(0.25*number_operator+1))
+HH = (1/2)*(1/beta)*(0.25*number_operator*(0.25*number_operator+np.eye(16)))
 w, v = eig(HH)
 print ("Ground state energy using qumodes H (kinetic piece)", np.min(w))
+
+
+adag= np.zeros((size, size), float)
+a = np.zeros((size, size), float)
+
+bdag= np.zeros((size, size), float)
+b = np.zeros((size, size), float)
+
+for i in range (1, size):
+   adag[i][i-1] = math.sqrt(i)
+   a[i-1][i] = math.sqrt(i)
+   bdag[i][i-1] = math.sqrt(i)
+   b[i-1][i] = math.sqrt(i)
+
+NN = adag @ a + bdag @ b
+
+HH = (3/2)*(1/beta)*(1.0*(NN + 0.5*np.eye(16)@(1.0*(NN + 0.5*np.eye(16)))))
+with np.printoptions(precision=10, suppress=True, formatter={'float': '{:0.2f}'.format}, linewidth=100):
+   print (NN)
+w, v = eig(HH)
+print ("Ground state energy using qumodes H (kinetic piece)", np.min(w)) 
