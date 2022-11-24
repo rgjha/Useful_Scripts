@@ -17,27 +17,48 @@ ad = RaisingOp('a')
 a = LoweringOp('a')
 NOP = NumberOp('N')
 H = Hamiltonian('H')
-
-N = 4 
 SQRT2 = 1.4142135623730951
 SQRT3 = 1.7320508075688772
 
-if len(sys.argv) < 3:
-  print("Usage: python", str(sys.argv[0]), "l-max selected " "beta=1/g^2")
+if len(sys.argv) < 4:
+  print("Usage: python", str(sys.argv[0]), " SITES " "l-max selected " "beta=1/g^2")
   sys.exit(1)
 
-lmax = float(sys.argv[1])
-beta = float(sys.argv[2])
+N = int(sys.argv[1])
+lmax = float(sys.argv[2])
+beta = float(sys.argv[3])
 sigmax = np.array([[0, 1],[1, 0]])
 isigmay =  np.array([[0, 1],[-1, 0]])
 sigmaz =  np.array([[1, 0],[0, -1]])
 
+def tensorsvd(input,left,right,D):
+
+    T = np.transpose(input,left+right)
+    left_index_list = []
+    for i in range(len(left)):
+        left_index_list.append(T.shape[i])
+    xsize = np.prod(left_index_list) 
+    right_index_list = []
+    for i in range(len(left),len(left)+len(right)):
+        right_index_list.append(T.shape[i])
+    ysize = np.prod(right_index_list)
+    T = np.reshape(T,(xsize,ysize))
+    U, s, V = np.linalg.svd(T,full_matrices = False)
+    if D < len(s):
+        s = np.diag(s[:D])
+        U = U[:,:D]
+        V = V[:D,:]
+    else:
+        D = len(s)
+        s = np.diag(s)
+    U = np.reshape(U,left_index_list+[D])
+    V = np.reshape(V,[D]+right_index_list)
+  
+    return U, s, V
+
 def dagger(a):
     return np.transpose(a).conj()
-
-nplus = -(sigmax + isigmay)/(3*SQRT2)
-nminus = -(sigmax - isigmay)/(3*SQRT2)
-nz = sigmaz 
+    
 
 if lmax == 0.5:
 
@@ -45,12 +66,15 @@ if lmax == 0.5:
    I2 = np.identity(2)
    I4 = np.identity(4)
    Ikin = np.identity(16)
+   nplus = -(sigmax + isigmay)/(3*SQRT2)
+   nminus = -(sigmax - isigmay)/(3*SQRT2)
+   nz = sigmaz 
    # beta = 10 gives -2.18472 for N=4
 
 if lmax == 1.5:
 
-   dimH = 8
-   Ikin = np.identity(dimH**4)
+   dimH = 6
+   Ikin = np.identity(dimH**N)
    I2 = np.identity(dimH)
    I4 = np.identity(dimH**2)
    # How to pad: np.pad(nplus, (0,padup), 'constant', constant_values=(0)) 
@@ -64,12 +88,24 @@ if lmax == 1.5:
       #print (nplus)
       #print (nminus)
 
+
+#nplus = np.pad(nplus, (0,2), 'constant', constant_values=(0))
+#nminus = np.pad(nminus, (0,2), 'constant', constant_values=(0))
+#nz = np.pad(nz, (0,2), 'constant', constant_values=(0))
+#u, s, vh = np.linalg.svd(nplus, full_matrices=True)
+#print (np.shape(u), np.shape(s), np.shape(vh)) 
+#print (s)
+
+#u, s, v = tensorsvd(nplus,[0],[1],4)
+#u = u @ np.sqrt(s) 
+#v = np.sqrt(s) @ v 
+#nplus = 
+#print (np.shape(u),np.shape(v))
+
 '''
-# Might as well pad before! Same answer. But slower.
-nplus = np.pad(nplus, (0,2), 'constant', constant_values=(0))
-nminus = np.pad(nminus, (0,2), 'constant', constant_values=(0))
-nz = np.pad(nz, (0,2), 'constant', constant_values=(0))
-'''
+# Initial attempt: Now deprecated
+
+# N = 4 
 
 HH = (N*(3./8.)*(1/beta)*Ikin) + \
 beta*(np.kron(np.kron(nplus, nminus), I4) + np.kron(np.kron(nminus, nplus), I4) + (1./9.0)*np.kron(np.kron(nz, nz), I4)) + \
@@ -77,8 +113,41 @@ beta*(np.kron(np.kron(np.kron(I2, nplus), nminus),I2) + np.kron(np.kron(np.kron(
 beta*(np.kron(np.kron(I4, nplus),nminus) + np.kron(np.kron(I4, nminus),nplus) + (1./9.0)*np.kron(np.kron(I4, nz), nz)) + \
 beta*(np.kron(np.kron(nminus, I4),nplus) + np.kron(np.kron(nplus, I4),nminus) + (1./9.0)*np.kron(np.kron(nz, I4), nz))
 
+# N = 3 
+
+HH = (N*(3./8.)*(1/beta)*Ikin) + \
+beta*(np.kron(np.kron(nplus, nminus), I2) + np.kron(np.kron(nminus, nplus), I2) + (1./9.0)*np.kron(np.kron(nz, nz), I2)) + \
+beta*(np.kron(np.kron(I2, nplus), nminus) + np.kron(np.kron(I2, nminus), nplus) + (1./9.0)*np.kron(np.kron(I2, nz), nz)) + \
+beta*(np.kron(np.kron(nminus, I2),nplus) + np.kron(np.kron(nplus, I2),nminus) + (1./9.0)*np.kron(np.kron(nz, I2), nz))
+'''
+
+# Generalize. 
+#'''
+Hk = N*(3./8.)*(1/beta)*Ikin 
+Hpm = np.kron(nplus, nminus)
+Hmp =  np.kron(nminus, nplus)
+Hz = np.kron(nz, nz)
+PM = Hpm 
+MP = Hmp 
+ZZ = Hz 
+
+for n in range (3, N+1):
+
+    Hpm = np.kron(Hpm,np.eye(dimH)) + np.kron(np.eye(dimH**(n-2)),PM)
+    Hmp = np.kron(Hmp,np.eye(dimH)) + np.kron(np.eye(dimH**(n-2)),MP)
+    Hz = np.kron(Hz,np.eye(dimH)) + np.kron(np.eye(dimH**(n-2)), ZZ)
+
+Hpm += np.kron(nminus, np.kron(np.eye(dimH**(N-2)), nplus)) 
+Hmp += np.kron(nplus, np.kron(np.eye(dimH**(N-2)), nminus)) 
+Hz += np.kron(nz, np.kron(np.eye(dimH**(N-2)), nz)) 
+
+HH = Hpm + Hmp + (1/9.)*Hz
+HH = beta*HH
+HH += Hk
+
+#'''
+
 #HH = np.pad(HH, (0,2800), 'constant', constant_values=(0))
-# Pad later! 
 
 # Check hermitian nature of H
 print ("Is the Hamiltonian Hermitian?", np.allclose(HH, dagger(HH)))
