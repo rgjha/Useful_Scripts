@@ -49,7 +49,7 @@ if lmax == 0.5:
 
 if lmax == 1.5:
 
-   dimH = 6
+   dimH = 8
    Ikin = np.identity(dimH**4)
    I2 = np.identity(dimH)
    I4 = np.identity(dimH**2)
@@ -60,11 +60,25 @@ if lmax == 1.5:
    nz = np.array([[1, 0, 0, SQRT2, 0, 0],[0, -1, 0, 0, SQRT2, 0],[0, 0, 0.6, 0, 0, 0],[SQRT2, 0, 0, 0.2, 0, 0], [0, SQRT2, 0, 0, -0.2, 0],[0, 0, 0, 0, 0, -0.6]])
    # beta = 10 gives -5.668232717889893 for N=4
 
+   #with np.printoptions(precision=10, suppress=True, formatter={'float': '{:0.2f}'.format}, linewidth=100):
+      #print (nplus)
+      #print (nminus)
+
+'''
+# Might as well pad before! Same answer. But slower.
+nplus = np.pad(nplus, (0,2), 'constant', constant_values=(0))
+nminus = np.pad(nminus, (0,2), 'constant', constant_values=(0))
+nz = np.pad(nz, (0,2), 'constant', constant_values=(0))
+'''
+
 HH = (N*(3./8.)*(1/beta)*Ikin) + \
 beta*(np.kron(np.kron(nplus, nminus), I4) + np.kron(np.kron(nminus, nplus), I4) + (1./9.0)*np.kron(np.kron(nz, nz), I4)) + \
 beta*(np.kron(np.kron(np.kron(I2, nplus), nminus),I2) + np.kron(np.kron(np.kron(I2, nminus), nplus),I2) + (1./9.0)*np.kron(np.kron(np.kron(I2, nz), nz), I2)) + \
 beta*(np.kron(np.kron(I4, nplus),nminus) + np.kron(np.kron(I4, nminus),nplus) + (1./9.0)*np.kron(np.kron(I4, nz), nz)) + \
 beta*(np.kron(np.kron(nminus, I4),nplus) + np.kron(np.kron(nplus, I4),nminus) + (1./9.0)*np.kron(np.kron(nz, I4), nz))
+
+#HH = np.pad(HH, (0,2800), 'constant', constant_values=(0))
+# Pad later! 
 
 # Check hermitian nature of H
 print ("Is the Hamiltonian Hermitian?", np.allclose(HH, dagger(HH)))
@@ -112,4 +126,4 @@ HH = (3/2)*(1/beta)*(1.0*(NN + 0.5*np.eye(16)@(1.0*(NN + 0.5*np.eye(16)))))
 with np.printoptions(precision=10, suppress=True, formatter={'float': '{:0.2f}'.format}, linewidth=100):
    print (NN)
 w, v = eig(HH)
-print ("Ground state energy using qumodes H (kinetic piece)", np.min(w))
+print ("Ground state energy using qumodes H (kinetic piece)", np.min(w)) 
