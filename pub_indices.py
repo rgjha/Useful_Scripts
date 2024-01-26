@@ -1,10 +1,10 @@
 import os
 import sys
 import numpy as np
-# Last updated: 12 December, 2023
+# Last updated: 26 January 2024
 # Computes h-index and g-index given a list with citation of papers 
 
-cit = [46, 13, 15, 3, 3, 4, 13, 50, 11, 1, 13, 19, 17, 13, 4, 5, 1, 5, 10, 7, 0, 1, 1, 0, 0, 0.]
+cit = [46, 13, 15, 3, 3, 4, 13, 52, 11, 1, 14, 19, 17, 14, 4, 6, 1, 5, 10, 7, 0, 2, 1, 1, 2, 0, 1.]
 n = np.shape(cit)[0]
 
 print ("Publication record of Raghav Govind Jha as per iNSPIRE-HEP") 
