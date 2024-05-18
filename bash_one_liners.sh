@@ -3,6 +3,12 @@
 # Find file with some name 'abc'
 find . -type f -name "abc*"
 
+# Change space separated to comma separated
+sed 's/ /,/g' filename
+
+# Change tab separated to comma separated
+sed 's/\t/,/g' filename
+
 # Change comma separated by tab separated and add each to new line 
 # Useful for Mathematica sometimes
 cat test.txt | tr '[,]' '[\t]' | tr " " "\n"
